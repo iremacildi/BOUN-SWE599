@@ -3,6 +3,8 @@ import { Grid, Typography } from '@mui/material';
 import logo from '../img/TTAlogo.png'
 import CustomButton from '../Components/CustomButton';
 import CustomTextField from '../Components/CustomTextField';
+import { Session } from "@inrupt/solid-client-authn-browser";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
 
@@ -17,6 +19,33 @@ function Login() {
     setShowUrlField((prevShow) => !prevShow);
   };
 
+  let navigate = useNavigate();
+
+  const redirectHomePage = (data) => {
+    navigate("../home", { data: data });
+  }
+
+  const session = new Session();
+
+  async function solidlogin() {
+    if (!session.info.isLoggedIn) {
+      await session.login({
+        oidcIssuer: "https://solidcommunity.net",
+        clientName: "The Things About...",
+        redirectUrl: window.location.href
+      });
+    }
+  }
+
+  async function handleRedirectAfterLogin() {
+    await session.handleIncomingRedirect(window.location.href);
+    if (session.info.isLoggedIn) {
+      redirectHomePage(session.info);
+    }
+  }
+
+  handleRedirectAfterLogin();
+
   return (
     <Grid container className="center" spacing={2} columns={16} direction="row" alignItems="center">
       <Grid>
@@ -30,7 +59,7 @@ function Login() {
           </Typography>
         </Grid>
         <Grid container item lg={16} justifyContent="center" alignItems="center" id="addmargin">
-          <CustomButton disabled={showUrlField} href="/login" id="addmarginright">Login with Solid</CustomButton>
+          <CustomButton disabled={showUrlField} onClick={solidlogin} id="addmarginright">Login with Solid</CustomButton>
           <CustomButton disabled={showUrlField} href="/login">Login with Inrupt</CustomButton>
         </Grid>
         <>{!showUrlField &&
