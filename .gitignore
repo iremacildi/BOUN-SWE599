@@ -11,3 +11,5 @@ node_modules/
 ui/build
 ui/.parcel-cache
 .parcel-cache
+
+.DS_Store
