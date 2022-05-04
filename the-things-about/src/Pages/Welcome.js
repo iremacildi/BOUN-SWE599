@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Button, Grid, Typography, Link } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import logo from '../img/TTAlogo.png'
-import LightButton from '../Components/LightButton';
+import CustomButton from '../Components/CustomButton';
 
 function Welcome() {
 
@@ -18,7 +17,7 @@ function Welcome() {
           </Typography>
         </Grid>
         <Grid container item lg={16} justifyContent="center" alignItems="center" id="addmargin">
-          <LightButton href="/login">Login</LightButton>
+          <CustomButton href="/login">Login</CustomButton>
         </Grid>
       </Grid>
     </Grid>
