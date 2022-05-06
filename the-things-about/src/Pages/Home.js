@@ -8,7 +8,6 @@ import SearchBar from '../Components/SearchBar';
 import PopupAddBookmark from './PopupAddBookmark';
 import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
 import PopupWelcome from './PopupWelcome';
-import AddBookmark from '../Components/AddBookmark';
 import {
     getSolidDataset,
     getThing,
@@ -117,7 +116,7 @@ function Home() {
                         <CustomTable rows={rows} headCells={headCells} />
                     </Grid>
                     <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                        <AddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
+                        <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
                     </Grid>
                 </Grid>
                 <Grid container item direction="column" lg={2} alignItems="flex-end">
