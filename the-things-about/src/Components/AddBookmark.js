@@ -1,72 +1,50 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
-    addDatetime,
-    addStringNoLocale,
     createThing,
-    getSourceUrl,
     saveSolidDatasetAt,
     setThing,
-    addUrl
+    buildThing
 } from "@inrupt/solid-client";
 import CustomButton from "./CustomButton";
 import { useSession } from "@inrupt/solid-ui-react";
 
-const TEXT_PREDICATE = "http://schema.org/text";
+const NAME_PREDICATE = "http://schema.org/name";
 const CREATED_PREDICATE = "http://www.w3.org/2000/10/annotation-ns#created";
-const BOOKMARK_CLASS = "http://www.w3.org/2002/01/bookmark#Bookmark";
+const BOOKMARK_CLASS = "https://schema.org/BookmarkAction";
 const TYPE_PREDICATE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-const DESCRIPTION_PREDICATE = "http://purl.org/dc/elements/1.1/#description";
-const RECALLS_PREDICATE = "http://www.w3.org/2002/01/bookmark#recalls";
-const TITLE_PREDICATE = "http://purl.org/dc/elements/1.1/#title";
-//rdf: is <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-//dc: are <http://purl.org/dc/elements/1.1/>
-//a: is <http://www.w3.org/2000/10/annotation-ns#>
-//rdf:type should be BOOKMARK_CLASS
+const DESCRIPTION_PREDICATE = "https://schema.org/Description";
+const URL_PREDICATE = "https://schema.org/url";
 
-{/* <rdf:Description rdf:about="file:///home/.amaya/bookmarks.rdf#ambookmark7">
-  <rdf:type rdf:resource="http://www.w3.org/2002/01/bookmark#Bookmark"/>
-  <b:recalls rdf:resource="https://www.wizardingworld.com/"/>
-  <dc:title>Wizarding World</dc:title>
-  <dc:description>Wizarding World includes Harry Potter and Fantastic Beasts.</dc:description>
-  <a:created>2022-05-06T22:35:00-00:00</a:created>
-</rdf:Description> */}
-
-function AddBookmark({ bookmarkList, setBookmarkList }) {
+function AddBookmark({ bookmarkList, setBookmarkList, containerUri }) {
     const { session } = useSession();
-    const [bookmarkText, setBookmarkText] = useState("");
+    const [bookmarkName, setBookmarkName] = useState("");
 
-    const addBookmark = async (text) => {
-        const indexUrl = getSourceUrl(bookmarkList);
-        const bookmarkWithText = addStringNoLocale(createThing(), TEXT_PREDICATE, text);
-        const bookmarkWithDate = addDatetime(
-            bookmarkWithText,
-            CREATED_PREDICATE,
-            new Date()
-        );
-        const bookmarkWithType = addUrl(bookmarkWithDate, TYPE_PREDICATE, BOOKMARK_CLASS);
-        console.log(bookmarkWithType);
-        console.log('--------------------');
-        const updatedBookmarkList = setThing(bookmarkList, bookmarkWithType);
-        const updatedDataset = await saveSolidDatasetAt(indexUrl, updatedBookmarkList, {
+    const addBookmark = async (name) => {
+        const newBookmarkThing = buildThing(createThing({ name: name }))
+            .addStringNoLocale(NAME_PREDICATE, name)
+            .addDatetime(CREATED_PREDICATE, new Date())
+            .addUrl(TYPE_PREDICATE, BOOKMARK_CLASS)
+            .addStringNoLocale(DESCRIPTION_PREDICATE, "this is a description!")
+            .addStringNoLocale(URL_PREDICATE, "https://www.wizardingworld.com/")
+            .build();
+
+        const updatedBookmarkList = setThing(bookmarkList, newBookmarkThing);
+        const updatedDataset = await saveSolidDatasetAt(containerUri, updatedBookmarkList, {
             fetch: session.fetch,
         });
         setBookmarkList(updatedDataset);
-        console.log(updatedBookmarkList);
-        console.log('*******************');
-        console.log(updatedDataset);
-        console.log('++++++++++++++++++++');
     };
 
     const handleSubmit = async (event) => {
-        alert(bookmarkText)
+        alert(bookmarkName)
         event.preventDefault();
-        addBookmark(bookmarkText);
-        setBookmarkText("");
+        addBookmark(bookmarkName);
+        setBookmarkName("");
     };
 
     const handleChange = (e) => {
         e.preventDefault();
-        setBookmarkText(e.target.value);
+        setBookmarkName(e.target.value);
     };
 
     return (
@@ -74,8 +52,8 @@ function AddBookmark({ bookmarkList, setBookmarkList }) {
             <label htmlFor="bookmark-input">
                 <input
                     id="bookmark-input"
-                    type="text"
-                    value={bookmarkText}
+                    type="name"
+                    value={bookmarkName}
                     onChange={handleChange}
                 />
             </label>

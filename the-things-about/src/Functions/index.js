@@ -5,7 +5,7 @@ import {
 } from "@inrupt/solid-client";
 
 export async function getOrCreateBookmarkList(containerUri, fetch) {
-    const indexUrl = `${containerUri}index.ttl`;
+    const indexUrl = `${containerUri}`;
     try {
         const bookmarkList = await getSolidDataset(indexUrl, { fetch });
         return bookmarkList;

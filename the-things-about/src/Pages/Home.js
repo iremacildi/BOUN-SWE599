@@ -20,21 +20,22 @@ function Home() {
     const { session } = useSession();
     const [bookmarkList, setBookmarkList] = useState();
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
+    const [containerUri, setContainerUri] = useState("");
 
     useEffect(() => {
-        if (!session || !session.info.isLoggedIn) return; 
+        if (!session || !session.info.isLoggedIn) return;
         (async () => {
-          const profileDataset = await getSolidDataset(session.info.webId, {
-            fetch: session.fetch,
-          });
-          const profileThing = getThing(profileDataset, session.info.webId);
-          const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
-          const pod = podsUrls[0];
-          const containerUri = `${pod}bookmarks/`;
-          const list = await getOrCreateBookmarkList(containerUri, session.fetch);
-          setBookmarkList(list);
+            const profileDataset = await getSolidDataset(session.info.webId, {
+                fetch: session.fetch,
+            });
+            const profileThing = getThing(profileDataset, session.info.webId);
+            const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
+            const pod = podsUrls[0];
+            setContainerUri(`${pod}bookmarks`);
+            const list = await getOrCreateBookmarkList(containerUri, session.fetch);
+            setBookmarkList(list);
         })();
-      }, [session, session.info.isLoggedIn]);
+    }, [session, session.info.isLoggedIn, containerUri]);
 
     function createData(name, source, type) {
         return {
@@ -116,7 +117,7 @@ function Home() {
                         <CustomTable rows={rows} headCells={headCells} />
                     </Grid>
                     <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                        <AddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList}/>
+                        <AddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
                     </Grid>
                 </Grid>
                 <Grid container item direction="column" lg={2} alignItems="flex-end">
