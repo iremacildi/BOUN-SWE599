@@ -10,10 +10,12 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import InputLabel from '@mui/material/InputLabel';
-import { maxHeight } from '@mui/system';
 import CustomSelect from '../Components/CustomSelect';
+import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
+import SaveBookmark from '../Components/AddBookmark';
 
 export default function PopupAddBookmark() {
+    const { session } = useSession();
     const [open, setOpen] = React.useState(false);
     const [label, setLabel] = React.useState(0);
 
@@ -29,17 +31,15 @@ export default function PopupAddBookmark() {
         setLabel(event.target.value);
     };
 
-    const handleSave = () => {
-        alert("saved!");
-        setOpen(false);
-    };
-
     const handleDelete = () => {
         alert("label deleted!");
     };
 
     return (
-        <React.Fragment>
+        <CombinedDataProvider
+            datasetUrl={session.info.webId}
+            thingUrl={session.info.webId}
+        >
             <CustomButton onClick={handleClickOpen}>Add New Bookmark</CustomButton>
             <Dialog open={open} onClose={handleClose} >
                 <DialogTitle>Add New Bookmark</DialogTitle>
@@ -131,11 +131,11 @@ export default function PopupAddBookmark() {
                     <Grid container direction="row">
                         <Grid container item justifyContent="flex-end" alignItems="flex-end" lg={12}>
                             <CustomButton id="addmarginright" onClick={handleClose}>Cancel</CustomButton>
-                            <CustomButton id="addmarginright" onClick={handleSave}>Save</CustomButton>
+                            <SaveBookmark id="addmarginright"/>
                         </Grid>
                     </Grid>
                 </DialogActions>
             </Dialog>
-        </React.Fragment >
+        </CombinedDataProvider>
     );
 }

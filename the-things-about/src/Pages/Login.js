@@ -3,7 +3,6 @@ import { Grid, Typography } from '@mui/material';
 import logo from '../img/TTAlogo.png'
 import CustomButton from '../Components/CustomButton';
 import CustomTextField from '../Components/CustomTextField';
-import { Session } from "@inrupt/solid-client-authn-browser";
 import { useNavigate } from "react-router-dom";
 import {
   LoginButton,

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Grid, IconButton } from '@mui/material';
 import logo from '../img/TTAlogo.png'
 import CustomButton from '../Components/CustomButton';
@@ -7,9 +8,34 @@ import SearchBar from '../Components/SearchBar';
 import PopupAddBookmark from './PopupAddBookmark';
 import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
 import PopupWelcome from './PopupWelcome';
+import AddBookmark from '../Components/AddBookmark';
+import {
+    getSolidDataset,
+    getThing,
+    getUrlAll
+} from "@inrupt/solid-client";
+import { getOrCreateBookmarkList } from '../Functions';
 
 function Home() {
     const { session } = useSession();
+    const [bookmarkList, setBookmarkList] = useState();
+    const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
+
+    useEffect(() => {
+        if (!session || !session.info.isLoggedIn) return; 
+        (async () => {
+          const profileDataset = await getSolidDataset(session.info.webId, {
+            fetch: session.fetch,
+          });
+          const profileThing = getThing(profileDataset, session.info.webId);
+          const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
+          const pod = podsUrls[0];
+          const containerUri = `${pod}bookmarks/`;
+          const list = await getOrCreateBookmarkList(containerUri, session.fetch);
+          setBookmarkList(list);
+        })();
+      }, [session, session.info.isLoggedIn]);
+
     function createData(name, source, type) {
         return {
             name,
@@ -90,7 +116,7 @@ function Home() {
                         <CustomTable rows={rows} headCells={headCells} />
                     </Grid>
                     <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                        <PopupAddBookmark />
+                        <AddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList}/>
                     </Grid>
                 </Grid>
                 <Grid container item direction="column" lg={2} alignItems="flex-end">
