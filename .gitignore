@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.vscode/
+
+node_modules/
+
+
+ui/build
+ui/.parcel-cache
+.parcel-cache
+
+.DS_Store
