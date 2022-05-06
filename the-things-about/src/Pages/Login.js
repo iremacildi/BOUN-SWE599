@@ -5,10 +5,17 @@ import CustomButton from '../Components/CustomButton';
 import CustomTextField from '../Components/CustomTextField';
 import { Session } from "@inrupt/solid-client-authn-browser";
 import { useNavigate } from "react-router-dom";
+import {
+  LoginButton,
+  useSession,
+} from "@inrupt/solid-ui-react";
 
 function Login() {
 
+  const { session } = useSession();
   const [showUrlField, setShowUrlField] = useState(false);
+  const [idp, setIdp] = useState("https://solidcommunity.net");
+  const [currentUrl, setCurrentUrl] = useState("http://localhost:3000");
 
   const prevShow = useRef(showUrlField);
   useEffect(() => {
@@ -25,18 +32,6 @@ function Login() {
     navigate("../home", { data: data });
   }
 
-  const session = new Session();
-
-  async function solidlogin() {
-    if (!session.info.isLoggedIn) {
-      await session.login({
-        oidcIssuer: "https://solidcommunity.net",
-        clientName: "The Things About...",
-        redirectUrl: window.location.href
-      });
-    }
-  }
-
   async function handleRedirectAfterLogin() {
     await session.handleIncomingRedirect(window.location.href);
     if (session.info.isLoggedIn) {
@@ -45,6 +40,10 @@ function Login() {
   }
 
   handleRedirectAfterLogin();
+
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, [setCurrentUrl]);
 
   return (
     <Grid container className="center" spacing={2} columns={16} direction="row" alignItems="center">
@@ -59,7 +58,16 @@ function Login() {
           </Typography>
         </Grid>
         <Grid container item lg={16} justifyContent="center" alignItems="center" id="addmargin">
-          <CustomButton disabled={showUrlField} onClick={solidlogin} id="addmarginright">Login with Solid</CustomButton>
+          <LoginButton
+            authOptions={{ clientName: 'The Things About...' }}
+            oidcIssuer={idp}
+            redirectUrl={currentUrl}
+            onError={console.error}
+          >
+            <CustomButton disabled={showUrlField} id="addmarginright">
+              Login with Solid
+            </CustomButton>
+          </LoginButton>
           <CustomButton disabled={showUrlField} href="/login">Login with Inrupt</CustomButton>
         </Grid>
         <>{!showUrlField &&

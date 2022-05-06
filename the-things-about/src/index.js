@@ -2,12 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import { BrowserRouter as Router } from "react-router-dom";
+import { SessionProvider } from "@inrupt/solid-ui-react";
 
 ReactDOM.render(
-  <React.StrictMode>
+  <SessionProvider>
     <Router>
       <App />
     </Router>
-  </React.StrictMode>,
+  </SessionProvider>,
   document.getElementById('root')
 );

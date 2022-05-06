@@ -5,9 +5,11 @@ import CustomTable from '../Components/CustomTable';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SearchBar from '../Components/SearchBar';
 import PopupAddBookmark from './PopupAddBookmark';
+import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
+import PopupWelcome from './PopupWelcome';
 
-function Welcome() {
-
+function Home() {
+    const { session } = useSession();
     function createData(name, source, type) {
         return {
             name,
@@ -70,29 +72,35 @@ function Welcome() {
     ];
 
     return (
-        <Grid container direction="row">
-            <Grid container item direction="column" lg={2} alignItems="flex-start">
-                <img width="100" src={logo} alt="TTA Logo" />
-            </Grid>
-            <Grid container item direction="column" lg={8} alignItems="center">
-                <Grid container spacing={1} justifyContent="center" alignItems="center" id="addmargin" direction="row">
-                    <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
-                    <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
+        <CombinedDataProvider
+            datasetUrl={session.info.webId}
+            thingUrl={session.info.webId}
+        >
+            <Grid container direction="row">
+                <PopupWelcome />
+                <Grid container item direction="column" lg={2} alignItems="flex-start">
+                    <img width="100" src={logo} alt="TTA Logo" />
                 </Grid>
-                <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
-                    <CustomTable rows={rows} headCells={headCells} />
+                <Grid container item direction="column" lg={8} alignItems="center">
+                    <Grid container spacing={1} justifyContent="center" alignItems="center" id="addmargin" direction="row">
+                        <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
+                        <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
+                    </Grid>
+                    <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
+                        <CustomTable rows={rows} headCells={headCells} />
+                    </Grid>
+                    <Grid container item alignItems="flex-start" id="addmargin" direction="row">
+                        <PopupAddBookmark />
+                    </Grid>
                 </Grid>
-                <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                    <PopupAddBookmark/>
+                <Grid container item direction="column" lg={2} alignItems="flex-end">
+                    <IconButton size="medium" onClick={() => alert("you will see settings soon.")}>
+                        <SettingsIcon sx={{ fontSize: 40, color: '#000000' }} />
+                    </IconButton>
                 </Grid>
             </Grid>
-            <Grid container item direction="column" lg={2} alignItems="flex-end">
-                <IconButton size="medium" onClick={() => alert("you will see settings soon.")}>
-                    <SettingsIcon sx={{ fontSize: 40, color: '#000000' }} />
-                </IconButton>
-            </Grid>
-        </Grid>
+        </CombinedDataProvider>
     );
 }
 
-export default Welcome;
+export default Home;
