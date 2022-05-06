@@ -4,6 +4,7 @@ import CustomButton from '../Components/CustomButton';
 import CustomTable from '../Components/CustomTable';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SearchBar from '../Components/SearchBar';
+import PopupAddBookmark from './PopupAddBookmark';
 
 function Welcome() {
 
@@ -82,7 +83,7 @@ function Welcome() {
                     <CustomTable rows={rows} headCells={headCells} />
                 </Grid>
                 <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                    <CustomButton onClick={() => alert("you will see 'add new bookmark' soon.")}>Add New Bookmark</CustomButton>
+                    <PopupAddBookmark/>
                 </Grid>
             </Grid>
             <Grid container item direction="column" lg={2} alignItems="flex-end">
