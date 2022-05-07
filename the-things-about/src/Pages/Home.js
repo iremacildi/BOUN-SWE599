@@ -11,18 +11,27 @@ import PopupWelcome from './PopupWelcome';
 import {
     getSolidDataset,
     getThing,
-    getUrlAll
+    getThingAll,
+    getUrlAll,
+    getStringNoLocale
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList } from '../Functions';
+
+const NAME_PREDICATE = "http://schema.org/name";
+const DESCRIPTION_PREDICATE = "https://schema.org/Description";
+const URL_PREDICATE = "https://schema.org/url";
+const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
 function Home() {
     const { session } = useSession();
     const [bookmarkList, setBookmarkList] = useState();
+    const [bookmarkTableRows, setBookmarkTableRows] = useState([]);
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
-    const [containerUri, setContainerUri] = useState("");
+    const [containerUri, setContainerUri] = useState();
 
     useEffect(() => {
         if (!session || !session.info.isLoggedIn) return;
+
         (async () => {
             const profileDataset = await getSolidDataset(session.info.webId, {
                 fetch: session.fetch,
@@ -33,44 +42,29 @@ function Home() {
             setContainerUri(`${pod}bookmarks`);
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
+            const _bookmarkTableData = getThingAll(list)
+            var _bookmarkTableRows = [];
+
+            _bookmarkTableData.map((bm) => {
+                const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
+                const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
+                const _bookmarkSource = getStringNoLocale(bm, URL_PREDICATE)
+                const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
+                _bookmarkTableRows = _bookmarkTableRows.concat(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
+            })
+
+            setBookmarkTableRows(_bookmarkTableRows);
         })();
     }, [session, session.info.isLoggedIn, containerUri]);
 
-    function createData(name, source, type) {
+    function createData(name, source, type, comment) {
         return {
             name,
             source,
             type,
-            history: [
-                {
-                    date: "2020-01-05",
-                    customerId: "11091700",
-                    amount: 3
-                },
-                {
-                    date: "2020-01-02",
-                    customerId: "Anonymous",
-                    amount: 1
-                }
-            ]
+            comment
         };
     }
-
-    const rows = [
-        createData('Cupcake', 305, 3.7),
-        createData('Donut', 452, 25.0),
-        createData('Eclair', 262, 16.0),
-        createData('Frozen yoghurt', 159, 6.0),
-        createData('Gingerbread', 356, 16.0),
-        createData('Honeycomb', 408, 3.2),
-        createData('Ice cream sandwich', 237, 9.0),
-        createData('Jelly Bean', 375, 0.0),
-        createData('KitKat', 518, 26.0),
-        createData('Lollipop', 392, 0.2),
-        createData('Marshmallow', 318, 0),
-        createData('Nougat', 360, 19.0),
-        createData('Oreo', 437, 18.0),
-    ];
 
     const handleSearch = (searchText) => {
         alert(searchText);
@@ -113,7 +107,8 @@ function Home() {
                         <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
                     </Grid>
                     <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
-                        <CustomTable rows={rows} headCells={headCells} />
+                        {bookmarkTableRows &&
+                            <CustomTable rows={bookmarkTableRows} headCells={headCells} />}
                     </Grid>
                     <Grid container item alignItems="flex-start" id="addmargin" direction="row">
                         <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
