@@ -3,6 +3,7 @@ import {
     getSolidDataset,
     saveSolidDatasetAt,
 } from "@inrupt/solid-client";
+import { parseDomain, ParseResultType } from 'parse-domain';
 
 export async function getOrCreateBookmarkList(containerUri, fetch) {
     const indexUrl = `${containerUri}`;
@@ -21,4 +22,28 @@ export async function getOrCreateBookmarkList(containerUri, fetch) {
             return bookmarkList;
         }
     }
+}
+
+export function getUrlHostname(url) {
+    try {
+        let domain = (new URL(url));
+        domain = domain.hostname;
+
+        let parseResult = parseDomain(domain);
+        if (parseResult.type === ParseResultType.Listed) {
+            const { domain } = parseResult;
+            return domain;
+        } else {
+            return "unknown";
+        }
+    } catch (error) {
+        return "unknown";
+    }
+}
+
+export function setHttp(url) {
+    if (url.search(/^http[s]?\:\/\//) == -1) {
+        url = 'http://' + url;
+    }
+    return url;
 }
