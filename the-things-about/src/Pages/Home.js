@@ -23,6 +23,11 @@ const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
+const NAME_PREDICATE = "http://schema.org/name";
+const DESCRIPTION_PREDICATE = "https://schema.org/Description";
+const URL_PREDICATE = "https://schema.org/url";
+const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
+
 function Home() {
     const { session } = useSession();
     const [bookmarkList, setBookmarkList] = useState();
@@ -71,7 +76,7 @@ function Home() {
     const refreshTable = () => {
         setTableKey(key => key + 1)
     };
-
+  
     const handleSearch = (searchText) => {
         alert(searchText);
     };
