@@ -27,14 +27,14 @@ function Login() {
 
   let navigate = useNavigate();
 
-  const redirectHomePage = (data) => {
-    navigate("../home", { data: data });
+  const redirectHomePage = () => {
+    navigate("../home");
   }
 
   async function handleRedirectAfterLogin() {
     await session.handleIncomingRedirect(window.location.href);
     if (session.info.isLoggedIn) {
-      redirectHomePage(session.info);
+      redirectHomePage();
     }
   }
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { Fragment, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -12,7 +12,7 @@ import ParaglidingIcon from '@mui/icons-material/Paragliding';
 
 export default function PopupWelcome() {
     const { session } = useSession();
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = useState(true);
 
     const handleClose = () => {
         setOpen(false);

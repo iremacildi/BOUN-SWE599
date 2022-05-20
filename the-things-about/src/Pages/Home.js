@@ -16,6 +16,12 @@ import {
     getStringNoLocale
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList } from '../Functions';
+import { SessionProvider } from "@inrupt/solid-ui-react";
+
+const NAME_PREDICATE = "http://schema.org/name";
+const DESCRIPTION_PREDICATE = "https://schema.org/Description";
+const URL_PREDICATE = "https://schema.org/url";
+const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
 const NAME_PREDICATE = "http://schema.org/name";
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
@@ -28,6 +34,7 @@ function Home() {
     const [bookmarkTableRows, setBookmarkTableRows] = useState([]);
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
     const [containerUri, setContainerUri] = useState();
+    const [tableKey, setTableKey] = useState(0);
 
     useEffect(() => {
         if (!session || !session.info.isLoggedIn) return;
@@ -55,7 +62,7 @@ function Home() {
 
             setBookmarkTableRows(_bookmarkTableRows);
         })();
-    }, [session, session.info.isLoggedIn, containerUri]);
+    }, [session, session.info.isLoggedIn, containerUri, tableKey]);
 
     function createData(name, source, type, comment) {
         return {
@@ -66,6 +73,10 @@ function Home() {
         };
     }
 
+    const refreshTable = () => {
+        setTableKey(key => key + 1)
+    };
+  
     const handleSearch = (searchText) => {
         alert(searchText);
     };
@@ -91,36 +102,45 @@ function Home() {
         },
     ];
 
+    const restoreCallback = (url) => {
+        console.log(`Use this function to navigate back to ${url}`);
+    };
+
     return (
-        <CombinedDataProvider
-            datasetUrl={session.info.webId}
-            thingUrl={session.info.webId}
-        >
-            <Grid container direction="row">
-                <PopupWelcome />
-                <Grid container item direction="column" lg={2} alignItems="flex-start">
-                    <img width="100" src={logo} alt="TTA Logo" />
-                </Grid>
-                <Grid container item direction="column" lg={8} alignItems="center">
-                    <Grid container spacing={1} justifyContent="center" alignItems="center" id="addmargin" direction="row">
-                        <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
-                        <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
+        <SessionProvider sessionId="session-provider-example"
+            onError={console.log}
+            restorePreviousSession
+            onSessionRestore={restoreCallback}>
+            <CombinedDataProvider
+                datasetUrl={session.info.webId}
+                thingUrl={session.info.webId}
+            >
+                <Grid container direction="row">
+                    <PopupWelcome />
+                    <Grid container item direction="column" lg={2} alignItems="flex-start">
+                        <img width="100" src={logo} alt="TTA Logo" />
                     </Grid>
-                    <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
-                        {bookmarkTableRows &&
-                            <CustomTable rows={bookmarkTableRows} headCells={headCells} />}
+                    <Grid container item direction="column" lg={8} alignItems="center">
+                        <Grid container spacing={1} justifyContent="center" alignItems="center" id="addmargin" direction="row">
+                            <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
+                            <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
+                        </Grid>
+                        <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
+                            {bookmarkTableRows &&
+                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} />}
+                        </Grid>
+                        <Grid container item alignItems="flex-start" id="addmargin" direction="row">
+                            <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
+                        </Grid>
                     </Grid>
-                    <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                        <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
+                    <Grid container item direction="column" lg={2} alignItems="flex-end">
+                        <IconButton size="medium" onClick={() => alert("you will see settings soon.")}>
+                            <SettingsIcon sx={{ fontSize: 40, color: '#000000' }} />
+                        </IconButton>
                     </Grid>
                 </Grid>
-                <Grid container item direction="column" lg={2} alignItems="flex-end">
-                    <IconButton size="medium" onClick={() => alert("you will see settings soon.")}>
-                        <SettingsIcon sx={{ fontSize: 40, color: '#000000' }} />
-                    </IconButton>
-                </Grid>
-            </Grid>
-        </CombinedDataProvider>
+            </CombinedDataProvider>
+        </SessionProvider>
     );
 }
 

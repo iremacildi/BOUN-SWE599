@@ -27,7 +27,7 @@ const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
-function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri }) {
+function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refreshTable }) {
     const { session } = useSession();
     const [bookmarkName, setBookmarkName] = useState("");
     const [bookmarkUrl, setBookmarkUrl] = useState("");
@@ -66,11 +66,11 @@ function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri }) {
     };
 
     const handleSubmit = async (event) => {
-        alert(bookmarkName)
         event.preventDefault();
         addBookmark();
         setBookmarkName("");
         setOpen(false);
+        refreshTable();
     };
 
     return (
