@@ -299,7 +299,7 @@ export default function CustomTable(props) {
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%' }} key={props.key}>
             <Paper sx={{ width: '100%', mb: 2 }}>
                 <CustomTableToolbar numSelected={selected.length} selected={selected} />
                 <TableContainer>

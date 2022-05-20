@@ -29,6 +29,7 @@ function Home() {
     const [bookmarkTableRows, setBookmarkTableRows] = useState([]);
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
     const [containerUri, setContainerUri] = useState();
+    const [tableKey, setTableKey] = useState(0);
 
     useEffect(() => {
         if (!session || !session.info.isLoggedIn) return;
@@ -56,7 +57,7 @@ function Home() {
 
             setBookmarkTableRows(_bookmarkTableRows);
         })();
-    }, [session, session.info.isLoggedIn, containerUri]);
+    }, [session, session.info.isLoggedIn, containerUri, tableKey]);
 
     function createData(name, source, type, comment) {
         return {
@@ -66,6 +67,10 @@ function Home() {
             comment
         };
     }
+
+    const refreshTable = () => {
+        setTableKey(key => key + 1)
+    };
 
     const handleSearch = (searchText) => {
         alert(searchText);
@@ -117,10 +122,10 @@ function Home() {
                         </Grid>
                         <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
                             {bookmarkTableRows &&
-                                <CustomTable rows={bookmarkTableRows} headCells={headCells} />}
+                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} />}
                         </Grid>
                         <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                            <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} />
+                            <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
                         </Grid>
                     </Grid>
                     <Grid container item direction="column" lg={2} alignItems="flex-end">
