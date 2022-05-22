@@ -17,16 +17,16 @@ import {
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
+const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
-
-const NAME_PREDICATE = "http://schema.org/name";
-const DESCRIPTION_PREDICATE = "https://schema.org/Description";
-const URL_PREDICATE = "https://schema.org/url";
-const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
+const VCARD = new rdf.Namespace('http://www.w3.org/2006/vcard/ns#');
+const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
+const LDP = new rdf.Namespace('http://www.w3.org/ns/ldp#');
+const RDF = new rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 
 function Home() {
     const { session } = useSession();
@@ -35,6 +35,9 @@ function Home() {
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
     const [containerUri, setContainerUri] = useState();
     const [tableKey, setTableKey] = useState(0);
+    const [me, setMe] = useState();
+    const store = rdf.graph();
+    const fetcher = new rdf.Fetcher(store);
 
     useEffect(() => {
         if (!session || !session.info.isLoggedIn) return;
@@ -49,6 +52,8 @@ function Home() {
             setContainerUri(`${pod}bookmarks`);
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
+            setMe(store.sym(session.info.webId));
+            window.solidFetcher = session.clientAuthentication.fetch;
             const _bookmarkTableData = getThingAll(list)
             var _bookmarkTableRows = [];
 
@@ -76,9 +81,29 @@ function Home() {
     const refreshTable = () => {
         setTableKey(key => key + 1)
     };
-  
+
     const handleSearch = (searchText) => {
-        alert(searchText);
+        console.log(session)
+        console.log(session.clientAuthentication)
+        const profile = me.doc();
+        let friends = [];
+        console.log(fetcher)
+
+        fetcher.load(profile).then(resp => {
+            store.each(me, FOAF('knows')).forEach(friend => friends.push(friend));
+        });
+
+        console.log(friends)
+
+        let folder = rdf.sym('https://iremacildi.solidcommunity.net/movies/');
+
+        fetcher.load(folder).then(() => {
+            store.each(folder, LDP('contains')).forEach(file => {
+                console.log(file)
+            })
+        });
+
+        // alert(searchText);
     };
 
     const headCells = [
