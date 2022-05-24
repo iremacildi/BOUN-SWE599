@@ -3,9 +3,7 @@ import {
     createThing,
     saveSolidDatasetAt,
     setThing,
-    buildThing,
-    saveFileInContainer,
-    overwriteFile
+    buildThing
 } from "@inrupt/solid-client";
 import CustomButton from "../Components/CustomButton";
 import { useSession } from "@inrupt/solid-ui-react";
@@ -29,7 +27,7 @@ const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
-function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refreshTable }) {
+function PopupAddBookmark({ bookmarkList, containerUri, refreshTable }) {
     const { session } = useSession();
     const [bookmarkName, setBookmarkName] = useState("");
     const [bookmarkUrl, setBookmarkUrl] = useState("");
@@ -60,28 +58,11 @@ function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refresh
             .addStringNoLocale(IDENTIFIER_PREDICATE, bookmarkType)
             .build();
 
-        console.log('newBookmarkThing')
-        console.log(newBookmarkThing)
-
         const updatedBookmarkList = setThing(bookmarkList, newBookmarkThing);
-        console.log('updatedBookmarkList')
-        console.log(updatedBookmarkList)
-        // const savedFile = await saveFileInContainer(
-        //     containerUri,
-        //     new Blob([JSON.stringify(newBookmarkThing)], { type: "text/turtle" }),
-        //     // { contentType: newBookmarkThing.type, fetch: session.fetch }
-        // );
-        // const savedFile = await overwriteFile(
-        //     containerUri + bookmarkName,
-        //     newBookmarkThing,
-        //     { contentType: newBookmarkThing.type, fetch: session.fetch }
-        // );
 
         const updatedDataset = await saveSolidDatasetAt(containerUri, updatedBookmarkList, {
             fetch: session.fetch,
         });
-        setBookmarkList('updatedDataset');
-        setBookmarkList(updatedDataset);
     };
 
     const handleSubmit = async (event) => {

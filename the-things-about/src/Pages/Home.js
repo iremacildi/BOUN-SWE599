@@ -14,10 +14,9 @@ import {
     getThingAll,
     getUrlAll,
     getStringNoLocale,
-    getProfileAll,
     getPodUrlAll
 } from "@inrupt/solid-client";
-import { getOrCreateBookmarkList, friends, runQuery } from '../Functions';
+import { getOrCreateBookmarkList, getBookmarkList } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
 const rdf = require('rdflib');
 
@@ -49,42 +48,22 @@ function Home() {
         (async () => {
             setMe(store.sym(session.info.webId));
             window.solidFetcher = session.clientAuthentication.fetch;
-            // console.log('-----------')
 
             const profileDataset = await getSolidDataset(session.info.webId, {
                 fetch: session.fetch,
             });
-            // console.log('profileDataset')
-            // console.log(profileDataset)
+
             const profileThing = getThing(profileDataset, session.info.webId);
-            // console.log('profileThing')
-            // console.log(profileThing)
             const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
             console.log('podsUrls')
             console.log(podsUrls)
             const pod = podsUrls[0];
-            ///////////////////////////////////////
             setContainerUri(`${pod}bookmarks`);
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
             setMe(store.sym(session.info.webId));
-            window.solidFetcher = session.clientAuthentication.fetch;
-            const _bookmarkTableData = getThingAll(list)
-            ///////////////////////////////////////
-            // setContainerUri(`${pod}bookmarkss`);
-            // const bookmarkDataset = await getOrCreateBookmarkList(containerUri, session.fetch);
-            // setBookmarkList('bookmarkDataset');
-            // setBookmarkList(bookmarkDataset);
-            // console.log('session.info.webId')
-            // console.log(session.info.webId)
-            // console.log('containerUri')
-            // console.log(containerUri)
-            // const bookmarkThing = getThing(bookmarkDataset, containerUri);
-            // console.log('bookmarkThing')
-            // console.log(bookmarkThing)
 
-            // const _bookmarkTableData = bookmarkThing
-            ///////////////////////////////////////
+            const _bookmarkTableData = getThingAll(list)
             var _bookmarkTableRows = [];
 
             _bookmarkTableData.map((bm) => {
@@ -113,79 +92,65 @@ function Home() {
     };
 
     const handleSearch = async (searchText) => {
-        // const profileDataset = getSolidDataset("https://volkandemir.solidcommunity.net/profile/card#me", {
-        //     fetch: session.fetch,
-        // });
-        // // console.log('profileDataset')
-        // // console.log(profileDataset)
-        // const profileThing = getThing(profileDataset, "https://volkandemir.solidcommunity.net/profile/card#me");
-        // console.log('profileThing')
-        // console.log(profileThing)
+        //read bookmarks of a person
+        // const podsUrls = await getPodUrlAll("https://volkandemir.solidcommunity.net/profile/card#me")
+        // // console.log(podsUrls)
+        // const pod = podsUrls[0];
+        // var cont = `${pod}bookmarks`;
+        // const listt = await getBookmarkList(cont, session.fetch);
 
-        const podsUrls = await getPodUrlAll("https://volkandemir.solidcommunity.net/profile/card#me")
-        // console.log('profileThing')
-        // console.log(profileThing)
-        // const podsUrls = getUrlAll(profileThing.webIdProfile, STORAGE_PREDICATE);
-        // console.log('podsUrls')
-        console.log(podsUrls)
-        const pod = podsUrls[0];
-        ///////////////////////////////////////
-        var cont = `${pod}bookmarks`;
-        const listt = getOrCreateBookmarkList(cont, session.fetch);
+        // if (!listt) { alert('no bookmark') }
+        // else {
+        //     const _bookmarkTableData = await getThingAll(listt)
+        //     // console.log(_bookmarkTableData)
+        // }
 
-        const _bookmarkTableData = getThingAll(listt)
-        console.log('qqqqqqqqqqqqqqqqqqqqqq')
+        //------------------------------------------------//
+        //------------------------------------------------//
 
-        // console.log(session)
-        // console.log(session.clientAuthentication)
-        const profile = me.doc();
-        console.log(me)
-        console.log(profile)
-        // let friends = [];
-        // console.log(fetcher)
+        //get friends of a person
+        // const person = session.info.webId;
+        // // console.log(session.info.webId)
+        // fetcher.load(person);
+        // const friends = store.each(rdf.sym(person), FOAF('knows'));
 
-        // var indexOf = session.info.webId.indexOf('#');
-        // var docURI = session.info.webId.slice(0, indexOf)
-        // fetcher.nowOrWhenFetched(docURI, undefined, function (ok, body) {
-        //     friends(me, store);
+        // friends.forEach(async (friend) => {
+        //     await fetcher.load(friend);
+        //     // const fullName = store.any(friend, FOAF('name'));
+        //     // console.log(friend.value)
         // });
 
-        // fetcher.load(profile).then(resp => {
-        //     store.each(me, FOAF('knows')).forEach(friend => friends.push(friend));
-        // });
+        //------------------------------------------------//
+        //------------------------------------------------//
 
-        // console.log(friends)
+        //read name of a bookmark
+        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks#test';
+        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks';
+        // console.log(testbookmark)
+        // fetcher.load(testbookmark);
+        // const names = store.each(rdf.sym(testbookmark), '#test');
+        // console.log(names)
 
-        // let folder = rdf.sym('https://iremacildi.solidcommunity.net/movies/');
+        //------------------------------------------------//
+        //------------------------------------------------//
 
-        const person = session.info.webId;
-        console.log(session.info.webId)
-        fetcher.load(person);
-        const friends = store.each(rdf.sym(person), FOAF('knows'));
+        //get bookmarks of friends
+        fetcher.load(me);
+        const friends = store.each(rdf.sym(me), FOAF('knows'));
 
         friends.forEach(async (friend) => {
             await fetcher.load(friend);
-            const fullName = store.any(friend, FOAF('name'));
-            console.log(friend)
-            console.log(fullName.value)
+            const podsUrls = await getPodUrlAll(friend.value)
+            const pod = podsUrls[0];
+            var cont = `${pod}bookmarks`;
+            const listt = await getBookmarkList(cont, session.fetch);
+
+            if (!listt) { alert('no bookmark') }
+            else {
+                const _bookmarkTableData = await getThingAll(listt)
+                console.log(_bookmarkTableData)
+            }
         });
-
-        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks#test';
-        const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks';
-        console.log(testbookmark)
-        fetcher.load(testbookmark);
-        const names = store.each(rdf.sym(testbookmark), '#test');
-        console.log(names)
-
-        // fetcher.load(folder).then((res) => {
-        //     console.log(res)
-        //     store.each(folder, LDP('contains')).forEach(file => {
-        //         // var b = file.doc()
-        //         console.log(file)
-        //     })
-        // });
-
-        // alert(searchText);
     };
 
     const headCells = [
@@ -237,7 +202,7 @@ function Home() {
                                 <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} />}
                         </Grid>
                         <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                            <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
+                            <PopupAddBookmark bookmarkList={bookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
                         </Grid>
                     </Grid>
                     <Grid container item direction="column" lg={2} alignItems="flex-end">
