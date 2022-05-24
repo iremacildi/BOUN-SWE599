@@ -3,7 +3,9 @@ import {
     createThing,
     saveSolidDatasetAt,
     setThing,
-    buildThing
+    buildThing,
+    saveFileInContainer,
+    overwriteFile
 } from "@inrupt/solid-client";
 import CustomButton from "../Components/CustomButton";
 import { useSession } from "@inrupt/solid-ui-react";
@@ -58,10 +60,27 @@ function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refresh
             .addStringNoLocale(IDENTIFIER_PREDICATE, bookmarkType)
             .build();
 
+        console.log('newBookmarkThing')
+        console.log(newBookmarkThing)
+
         const updatedBookmarkList = setThing(bookmarkList, newBookmarkThing);
+        console.log('updatedBookmarkList')
+        console.log(updatedBookmarkList)
+        // const savedFile = await saveFileInContainer(
+        //     containerUri,
+        //     new Blob([JSON.stringify(newBookmarkThing)], { type: "text/turtle" }),
+        //     // { contentType: newBookmarkThing.type, fetch: session.fetch }
+        // );
+        // const savedFile = await overwriteFile(
+        //     containerUri + bookmarkName,
+        //     newBookmarkThing,
+        //     { contentType: newBookmarkThing.type, fetch: session.fetch }
+        // );
+
         const updatedDataset = await saveSolidDatasetAt(containerUri, updatedBookmarkList, {
             fetch: session.fetch,
         });
+        setBookmarkList('updatedDataset');
         setBookmarkList(updatedDataset);
     };
 

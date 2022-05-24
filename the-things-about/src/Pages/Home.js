@@ -13,13 +13,16 @@ import {
     getThing,
     getThingAll,
     getUrlAll,
-    getStringNoLocale
+    getStringNoLocale,
+    getProfileAll,
+    getPodUrlAll
 } from "@inrupt/solid-client";
-import { getOrCreateBookmarkList } from '../Functions';
+import { getOrCreateBookmarkList, friends, runQuery } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
 const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
+const SCHEMA = new rdf.Namespace("http://schema.org/");
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
@@ -27,6 +30,7 @@ const VCARD = new rdf.Namespace('http://www.w3.org/2006/vcard/ns#');
 const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
 const LDP = new rdf.Namespace('http://www.w3.org/ns/ldp#');
 const RDF = new rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+const BOOKMARKS = new rdf.Namespace('/bookmarks#');
 
 function Home() {
     const { session } = useSession();
@@ -43,18 +47,44 @@ function Home() {
         if (!session || !session.info.isLoggedIn) return;
 
         (async () => {
+            setMe(store.sym(session.info.webId));
+            window.solidFetcher = session.clientAuthentication.fetch;
+            // console.log('-----------')
+
             const profileDataset = await getSolidDataset(session.info.webId, {
                 fetch: session.fetch,
             });
+            // console.log('profileDataset')
+            // console.log(profileDataset)
             const profileThing = getThing(profileDataset, session.info.webId);
+            // console.log('profileThing')
+            // console.log(profileThing)
             const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
+            console.log('podsUrls')
+            console.log(podsUrls)
             const pod = podsUrls[0];
+            ///////////////////////////////////////
             setContainerUri(`${pod}bookmarks`);
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
             setMe(store.sym(session.info.webId));
             window.solidFetcher = session.clientAuthentication.fetch;
             const _bookmarkTableData = getThingAll(list)
+            ///////////////////////////////////////
+            // setContainerUri(`${pod}bookmarkss`);
+            // const bookmarkDataset = await getOrCreateBookmarkList(containerUri, session.fetch);
+            // setBookmarkList('bookmarkDataset');
+            // setBookmarkList(bookmarkDataset);
+            // console.log('session.info.webId')
+            // console.log(session.info.webId)
+            // console.log('containerUri')
+            // console.log(containerUri)
+            // const bookmarkThing = getThing(bookmarkDataset, containerUri);
+            // console.log('bookmarkThing')
+            // console.log(bookmarkThing)
+
+            // const _bookmarkTableData = bookmarkThing
+            ///////////////////////////////////////
             var _bookmarkTableRows = [];
 
             _bookmarkTableData.map((bm) => {
@@ -82,26 +112,78 @@ function Home() {
         setTableKey(key => key + 1)
     };
 
-    const handleSearch = (searchText) => {
-        console.log(session)
-        console.log(session.clientAuthentication)
+    const handleSearch = async (searchText) => {
+        // const profileDataset = getSolidDataset("https://volkandemir.solidcommunity.net/profile/card#me", {
+        //     fetch: session.fetch,
+        // });
+        // // console.log('profileDataset')
+        // // console.log(profileDataset)
+        // const profileThing = getThing(profileDataset, "https://volkandemir.solidcommunity.net/profile/card#me");
+        // console.log('profileThing')
+        // console.log(profileThing)
+
+        const podsUrls = await getPodUrlAll("https://volkandemir.solidcommunity.net/profile/card#me")
+        // console.log('profileThing')
+        // console.log(profileThing)
+        // const podsUrls = getUrlAll(profileThing.webIdProfile, STORAGE_PREDICATE);
+        // console.log('podsUrls')
+        console.log(podsUrls)
+        const pod = podsUrls[0];
+        ///////////////////////////////////////
+        var cont = `${pod}bookmarks`;
+        const listt = getOrCreateBookmarkList(cont, session.fetch);
+
+        const _bookmarkTableData = getThingAll(listt)
+        console.log('qqqqqqqqqqqqqqqqqqqqqq')
+
+        // console.log(session)
+        // console.log(session.clientAuthentication)
         const profile = me.doc();
-        let friends = [];
-        console.log(fetcher)
+        console.log(me)
+        console.log(profile)
+        // let friends = [];
+        // console.log(fetcher)
 
-        fetcher.load(profile).then(resp => {
-            store.each(me, FOAF('knows')).forEach(friend => friends.push(friend));
+        // var indexOf = session.info.webId.indexOf('#');
+        // var docURI = session.info.webId.slice(0, indexOf)
+        // fetcher.nowOrWhenFetched(docURI, undefined, function (ok, body) {
+        //     friends(me, store);
+        // });
+
+        // fetcher.load(profile).then(resp => {
+        //     store.each(me, FOAF('knows')).forEach(friend => friends.push(friend));
+        // });
+
+        // console.log(friends)
+
+        // let folder = rdf.sym('https://iremacildi.solidcommunity.net/movies/');
+
+        const person = session.info.webId;
+        console.log(session.info.webId)
+        fetcher.load(person);
+        const friends = store.each(rdf.sym(person), FOAF('knows'));
+
+        friends.forEach(async (friend) => {
+            await fetcher.load(friend);
+            const fullName = store.any(friend, FOAF('name'));
+            console.log(friend)
+            console.log(fullName.value)
         });
 
-        console.log(friends)
+        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks#test';
+        const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks';
+        console.log(testbookmark)
+        fetcher.load(testbookmark);
+        const names = store.each(rdf.sym(testbookmark), '#test');
+        console.log(names)
 
-        let folder = rdf.sym('https://iremacildi.solidcommunity.net/movies/');
-
-        fetcher.load(folder).then(() => {
-            store.each(folder, LDP('contains')).forEach(file => {
-                console.log(file)
-            })
-        });
+        // fetcher.load(folder).then((res) => {
+        //     console.log(res)
+        //     store.each(folder, LDP('contains')).forEach(file => {
+        //         // var b = file.doc()
+        //         console.log(file)
+        //     })
+        // });
 
         // alert(searchText);
     };
