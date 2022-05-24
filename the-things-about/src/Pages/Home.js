@@ -52,20 +52,16 @@ function Home() {
             const profileDataset = await getSolidDataset(session.info.webId, {
                 fetch: session.fetch,
             });
-
             const profileThing = getThing(profileDataset, session.info.webId);
             const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
-            console.log('podsUrls')
-            console.log(podsUrls)
             const pod = podsUrls[0];
             setContainerUri(`${pod}bookmarks`);
+
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
-            setMe(store.sym(session.info.webId));
 
             const _bookmarkTableData = getThingAll(list)
             var _bookmarkTableRows = [];
-
             _bookmarkTableData.map((bm) => {
                 const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
                 const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
@@ -73,7 +69,6 @@ function Home() {
                 const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
                 _bookmarkTableRows = _bookmarkTableRows.concat(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
             })
-
             setBookmarkTableRows(_bookmarkTableRows);
         })();
     }, [session, session.info.isLoggedIn, containerUri, tableKey]);
@@ -92,37 +87,6 @@ function Home() {
     };
 
     const handleSearch = async (searchText) => {
-        //read bookmarks of a person
-        // const podsUrls = await getPodUrlAll("https://volkandemir.solidcommunity.net/profile/card#me")
-        // // console.log(podsUrls)
-        // const pod = podsUrls[0];
-        // var cont = `${pod}bookmarks`;
-        // const listt = await getBookmarkList(cont, session.fetch);
-
-        // if (!listt) { alert('no bookmark') }
-        // else {
-        //     const _bookmarkTableData = await getThingAll(listt)
-        //     // console.log(_bookmarkTableData)
-        // }
-
-        //------------------------------------------------//
-        //------------------------------------------------//
-
-        //get friends of a person
-        // const person = session.info.webId;
-        // // console.log(session.info.webId)
-        // fetcher.load(person);
-        // const friends = store.each(rdf.sym(person), FOAF('knows'));
-
-        // friends.forEach(async (friend) => {
-        //     await fetcher.load(friend);
-        //     // const fullName = store.any(friend, FOAF('name'));
-        //     // console.log(friend.value)
-        // });
-
-        //------------------------------------------------//
-        //------------------------------------------------//
-
         //read name of a bookmark
         // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks#test';
         // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks';
