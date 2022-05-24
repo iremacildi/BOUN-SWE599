@@ -18,6 +18,7 @@ import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import InputLabel from '@mui/material/InputLabel';
 import CustomSelect from '../Components/CustomSelect';
+import { generateBookmarkId } from '../Functions';
 
 const NAME_PREDICATE = "http://schema.org/name";
 const CREATED_PREDICATE = "http://www.w3.org/2000/10/annotation-ns#created";
@@ -49,7 +50,7 @@ function PopupAddBookmark({ bookmarkList, containerUri, refreshTable }) {
     };
 
     const addBookmark = async () => {
-        const newBookmarkThing = buildThing(createThing({ name: bookmarkName }))
+        const newBookmarkThing = buildThing(createThing({ name: generateBookmarkId() }))
             .addStringNoLocale(NAME_PREDICATE, bookmarkName)
             .addDatetime(CREATED_PREDICATE, new Date())
             .addUrl(TYPE_PREDICATE, BOOKMARK_CLASS)
