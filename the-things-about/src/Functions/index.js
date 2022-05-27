@@ -4,6 +4,7 @@ import {
     saveSolidDatasetAt,
 } from "@inrupt/solid-client";
 import { parseDomain, ParseResultType } from 'parse-domain';
+const axios = require('axios');
 
 export async function getOrCreateBookmarkList(containerUri, fetch) {
     const indexUrl = `${containerUri}`;
@@ -65,3 +66,58 @@ export function generateBookmarkId() {
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
 }
+
+export const wikidataSearch = async (searchText) => {
+    const wikiResult = [];
+
+    try {
+        let query = `
+        SELECT distinct ?itemLabel ?linkcount #?classLabel ?typeLabel
+        WHERE {
+          {
+            SELECT ?class ?searched_item
+            WHERE {
+              {
+                SELECT ?searched_item {
+                  SERVICE wikibase:mwapi {
+                    bd:serviceParam wikibase:api "EntitySearch".
+                    bd:serviceParam wikibase:endpoint "www.wikidata.org".
+                    bd:serviceParam mwapi:search "` + searchText + `".
+                    bd:serviceParam mwapi:language "en".
+                    ?searched_item wikibase:apiOutputItem mwapi:item.
+                    ?num wikibase:apiOrdinal true.
+                  }
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+                }
+                LIMIT 5
+              }
+              hint:Prior hint:runFirst true .
+              ?searched_item wdt:P279 ?class .
+              ?searched_item wdt:P31 ?type .
+              SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+            }
+          }
+          hint:Prior hint:runFirst true .
+          ?item wdt:P279 ?class .
+          ?item wdt:P31 ?type .
+          ?item wikibase:sitelinks ?linkcount .
+          FILTER(?linkcount > 50).
+          FILTER(?item != ?searched_item).
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+        }
+        ORDER BY ASC(?class) ASC(?type) DESC(?linkcount)`
+
+        const params = new URLSearchParams([['format', 'json'], ['query', query]]);
+
+        const res = await axios.get('https://query.wikidata.org/sparql', { params });
+
+        res.data.results.bindings.forEach((r) => {
+            wikiResult.push(r.itemLabel.value)
+        })
+    } catch (error) {
+        console.log(error)
+    }
+
+    wikiResult.push(searchText);
+    return wikiResult;
+};
