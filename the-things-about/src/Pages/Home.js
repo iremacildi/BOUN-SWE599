@@ -104,51 +104,23 @@ function Home() {
         const friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
 
         friends.forEach(async (friend) => {
-            console.log(friend)
-
             await fetcher.load(friend);
             const podsUrls = await getPodUrlAll(friend.value) //friend's pods
             const pod = podsUrls[0]; //friend's pod
-            var cont = `${pod}bookmarks#test`;
+            var cont = `${pod}bookmarks`;
             const listt = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
-            console.log(listt)
-            await fetcher.load(store.sym(cont));
-            console.log(store.sym(cont));
-            console.log(me);
-            const nmmm = store.each(rdf.sym(store.sym(cont)), SCHEMA('name')); //get friends
-            console.log(nmmm);
-            console.log(rdf.sym(store.sym(cont)))
-            // console.log('girdim')
-            // var ab = store.sym(cont)
-            // console.log(ab);
-            // var c = rdf.sym(ab)
-            // console.log(c.doc())
-            // var d = store.each(c, null);
-            // console.log(d)
-            // console.log('cikdim')
-            // if (!listt) { alert('no bookmark') }
-            // else {
-            //     const _bookmarkTableData = await getThingAll(listt) //friend's bookmarks
-            //     // console.log(_bookmarkTableData)
-                
-            //     _bookmarkTableData.forEach((data) => {
-            //         // console.log(data)
-            //         // console.log(me)
-            //         // console.log(rdf.sym(me))
-            //         // console.log(friend)
-            //         // var bookmark = store.match(data, null, null, null)
-            //         // console.log(bookmark)
 
-            //         // console.log(store.match(friend, SCHEMA('name'), 'test', null))
-            //     })
+            if (!listt) { alert('no bookmark') }
+            else {
+                const _bookmarkTableData = await getThingAll(listt) //friend's bookmarks
 
-            //     // listt.graphs.graphs.
-
-            //     // console.log('qqqq')
-            // }
+                _bookmarkTableData.forEach(async (data) => {
+                    await fetcher.load(store.sym(data.url));
+                    const nmmm = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name')); 
+                    console.log(nmmm[0].value);
+                })
+            }
         });
-
-        // const matchh = store.match()
     };
 
     const headCells = [
