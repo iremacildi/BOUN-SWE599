@@ -18,6 +18,7 @@ import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import InputLabel from '@mui/material/InputLabel';
 import CustomSelect from '../Components/CustomSelect';
+import { generateBookmarkId } from '../Functions';
 
 const NAME_PREDICATE = "http://schema.org/name";
 const CREATED_PREDICATE = "http://www.w3.org/2000/10/annotation-ns#created";
@@ -27,7 +28,7 @@ const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 
-function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refreshTable }) {
+function PopupAddBookmark({ bookmarkList, containerUri, refreshTable }) {
     const { session } = useSession();
     const [bookmarkName, setBookmarkName] = useState("");
     const [bookmarkUrl, setBookmarkUrl] = useState("");
@@ -49,7 +50,7 @@ function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refresh
     };
 
     const addBookmark = async () => {
-        const newBookmarkThing = buildThing(createThing({ name: bookmarkName }))
+        const newBookmarkThing = buildThing(createThing({ name: generateBookmarkId() }))
             .addStringNoLocale(NAME_PREDICATE, bookmarkName)
             .addDatetime(CREATED_PREDICATE, new Date())
             .addUrl(TYPE_PREDICATE, BOOKMARK_CLASS)
@@ -59,10 +60,10 @@ function PopupAddBookmark({ bookmarkList, setBookmarkList, containerUri, refresh
             .build();
 
         const updatedBookmarkList = setThing(bookmarkList, newBookmarkThing);
+
         const updatedDataset = await saveSolidDatasetAt(containerUri, updatedBookmarkList, {
             fetch: session.fetch,
         });
-        setBookmarkList(updatedDataset);
     };
 
     const handleSubmit = async (event) => {

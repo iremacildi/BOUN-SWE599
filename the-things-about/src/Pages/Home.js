@@ -13,20 +13,20 @@ import {
     getThing,
     getThingAll,
     getUrlAll,
-    getStringNoLocale
+    getStringNoLocale,
+    getPodUrlAll
 } from "@inrupt/solid-client";
-import { getOrCreateBookmarkList } from '../Functions';
+import { getOrCreateBookmarkList, getBookmarkList, wikidataSearch } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
+const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
+const SCHEM = new rdf.Namespace("https://schema.org/");
+const SCHEMA = new rdf.Namespace("http://schema.org/");
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
-
-const NAME_PREDICATE = "http://schema.org/name";
-const DESCRIPTION_PREDICATE = "https://schema.org/Description";
-const URL_PREDICATE = "https://schema.org/url";
-const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
+const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
 
 function Home() {
     const { session } = useSession();
@@ -35,11 +35,17 @@ function Home() {
     const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
     const [containerUri, setContainerUri] = useState();
     const [tableKey, setTableKey] = useState(0);
+    const [me, setMe] = useState();
+    const store = rdf.graph();
+    const fetcher = new rdf.Fetcher(store);
 
     useEffect(() => {
         if (!session || !session.info.isLoggedIn) return;
 
         (async () => {
+            setMe(store.sym(session.info.webId));
+            window.solidFetcher = session.clientAuthentication.fetch;
+
             const profileDataset = await getSolidDataset(session.info.webId, {
                 fetch: session.fetch,
             });
@@ -47,11 +53,12 @@ function Home() {
             const podsUrls = getUrlAll(profileThing, STORAGE_PREDICATE);
             const pod = podsUrls[0];
             setContainerUri(`${pod}bookmarks`);
+
             const list = await getOrCreateBookmarkList(containerUri, session.fetch);
             setBookmarkList(list);
+
             const _bookmarkTableData = getThingAll(list)
             var _bookmarkTableRows = [];
-
             _bookmarkTableData.map((bm) => {
                 const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
                 const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
@@ -59,7 +66,6 @@ function Home() {
                 const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
                 _bookmarkTableRows = _bookmarkTableRows.concat(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
             })
-
             setBookmarkTableRows(_bookmarkTableRows);
         })();
     }, [session, session.info.isLoggedIn, containerUri, tableKey]);
@@ -76,9 +82,47 @@ function Home() {
     const refreshTable = () => {
         setTableKey(key => key + 1)
     };
-  
-    const handleSearch = (searchText) => {
-        alert(searchText);
+
+    const handleSearch = async (searchText) => {
+        const searchResult = [];
+
+        //search in wikidata for similar keywords
+        const searchKeywords = await wikidataSearch(searchText);
+        console.log(searchKeywords);
+
+        //get bookmarks of friends
+        fetcher.load(me);
+        const friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
+
+        await friends.forEach(async (friend) => {
+            await fetcher.load(friend);
+
+            const podsUrls = await getPodUrlAll(friend.value) //friend's pods
+            const pod = podsUrls[0]; //friend's pod
+            var cont = `${pod}bookmarks`;
+
+            const bookmarks = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
+
+            if (!bookmarks) { alert('no bookmark') }
+            else {
+                const _bookmarkTableData = await getThingAll(bookmarks) //friend's bookmarks
+
+                await _bookmarkTableData.forEach(async (data) => {
+                    await fetcher.load(store.sym(data.url));
+                    const name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name'));
+                    const description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description'));
+
+                    if (name && new RegExp(searchKeywords.join("|")).test(name[0].value)) {
+                        searchResult.push(data);
+                    }
+                    else if (description && new RegExp(searchKeywords.join("|")).test(description[0].value)) {
+                        searchResult.push(data);
+                    }
+                })
+            }
+        });
+
+        console.log(searchResult);
     };
 
     const headCells = [
@@ -130,7 +174,7 @@ function Home() {
                                 <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} />}
                         </Grid>
                         <Grid container item alignItems="flex-start" id="addmargin" direction="row">
-                            <PopupAddBookmark bookmarkList={bookmarkList} setBookmarkList={setBookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
+                            <PopupAddBookmark bookmarkList={bookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
                         </Grid>
                     </Grid>
                     <Grid container item direction="column" lg={2} alignItems="flex-end">
