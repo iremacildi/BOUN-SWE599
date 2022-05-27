@@ -18,6 +18,7 @@ import {
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList, getBookmarkList } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
+const axios = require('axios');
 const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
@@ -88,7 +89,6 @@ function Home() {
 
         //search in wikidata for similar keywords
         const searchKeywords = await wikidataSearch(searchText);
-        console.log('searchKeywords =>');
         console.log(searchKeywords);
 
         //get bookmarks of friends
@@ -122,12 +122,60 @@ function Home() {
                 })
             }
         });
-        console.log('searchResult =>');
+
         console.log(searchResult);
     };
 
     const wikidataSearch = async (searchText) => {
         const wikiResult = [];
+
+        try {
+            let query = `
+            SELECT distinct ?itemLabel ?linkcount #?classLabel ?typeLabel
+            WHERE {
+              {
+                SELECT ?class ?searched_item
+                WHERE {
+                  {
+                    SELECT ?searched_item {
+                      SERVICE wikibase:mwapi {
+                        bd:serviceParam wikibase:api "EntitySearch".
+                        bd:serviceParam wikibase:endpoint "www.wikidata.org".
+                        bd:serviceParam mwapi:search "` + searchText + `".
+                        bd:serviceParam mwapi:language "en".
+                        ?searched_item wikibase:apiOutputItem mwapi:item.
+                        ?num wikibase:apiOrdinal true.
+                      }
+                      SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+                    }
+                    LIMIT 5
+                  }
+                  hint:Prior hint:runFirst true .
+                  ?searched_item wdt:P279 ?class .
+                  ?searched_item wdt:P31 ?type .
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+                }
+              }
+              hint:Prior hint:runFirst true .
+              ?item wdt:P279 ?class .
+              ?item wdt:P31 ?type .
+              ?item wikibase:sitelinks ?linkcount .
+              FILTER(?linkcount > 50).
+              FILTER(?item != ?searched_item).
+              SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+            }
+            ORDER BY ASC(?class) ASC(?type) DESC(?linkcount)`
+
+            const params = new URLSearchParams([['format', 'json'], ['query', query]]);
+
+            const res = await axios.get('https://query.wikidata.org/sparql', { params });
+
+            res.data.results.bindings.forEach((r) => {
+                wikiResult.push(r.itemLabel.value)
+            })
+        } catch (error) {
+            console.log(error)
+        }
 
         wikiResult.push(searchText);
         return wikiResult;
