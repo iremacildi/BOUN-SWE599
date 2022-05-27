@@ -21,6 +21,7 @@ import { SessionProvider } from "@inrupt/solid-ui-react";
 const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
+const SCHEM = new rdf.Namespace("https://schema.org/");
 const SCHEMA = new rdf.Namespace("http://schema.org/");
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
@@ -116,8 +117,10 @@ function Home() {
 
                 _bookmarkTableData.forEach(async (data) => {
                     await fetcher.load(store.sym(data.url));
-                    const nmmm = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name')); 
-                    console.log(nmmm[0].value);
+                    const name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name')); 
+                    const description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description')); 
+                    console.log(name[0].value);
+                    console.log(description[0].value);
                 })
             }
         });
