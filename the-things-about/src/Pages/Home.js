@@ -26,12 +26,7 @@ const SCHEMA = new rdf.Namespace("http://schema.org/");
 const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
-const VCARD = new rdf.Namespace('http://www.w3.org/2006/vcard/ns#');
 const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
-const LDP = new rdf.Namespace('http://www.w3.org/ns/ldp#');
-const RDF = new rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-const BOOKMARKS = new rdf.Namespace('/bookmarks#');
-const SPACE = new rdf.Namespace('http://www.w3.org/ns/pim/space#');
 
 function Home() {
     const { session } = useSession();
@@ -89,41 +84,53 @@ function Home() {
     };
 
     const handleSearch = async (searchText) => {
-        //read name of a bookmark
-        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks#test';
-        // const testbookmark = 'https://iremacildi.solidcommunity.net/bookmarks';
-        // console.log(testbookmark)
-        // fetcher.load(testbookmark);
-        // const names = store.each(rdf.sym(testbookmark), '#test');
-        // console.log(names)
+        const searchResult = [];
 
-        //------------------------------------------------//
-        //------------------------------------------------//
+        //search in wikidata for similar keywords
+        const searchKeywords = await wikidataSearch(searchText);
+        console.log('searchKeywords =>');
+        console.log(searchKeywords);
 
         //get bookmarks of friends
         fetcher.load(me);
         const friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
 
-        friends.forEach(async (friend) => {
+        await friends.forEach(async (friend) => {
             await fetcher.load(friend);
+
             const podsUrls = await getPodUrlAll(friend.value) //friend's pods
             const pod = podsUrls[0]; //friend's pod
             var cont = `${pod}bookmarks`;
-            const listt = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
 
-            if (!listt) { alert('no bookmark') }
+            const bookmarks = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
+
+            if (!bookmarks) { alert('no bookmark') }
             else {
-                const _bookmarkTableData = await getThingAll(listt) //friend's bookmarks
+                const _bookmarkTableData = await getThingAll(bookmarks) //friend's bookmarks
 
-                _bookmarkTableData.forEach(async (data) => {
+                await _bookmarkTableData.forEach(async (data) => {
                     await fetcher.load(store.sym(data.url));
-                    const name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name')); 
-                    const description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description')); 
-                    console.log(name[0].value);
-                    console.log(description[0].value);
+                    const name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name'));
+                    const description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description'));
+
+                    if (name && new RegExp(searchKeywords.join("|")).test(name[0].value)) {
+                        searchResult.push(data);
+                    }
+                    else if (description && new RegExp(searchKeywords.join("|")).test(description[0].value)) {
+                        searchResult.push(data);
+                    }
                 })
             }
         });
+        console.log('searchResult =>');
+        console.log(searchResult);
+    };
+
+    const wikidataSearch = async (searchText) => {
+        const wikiResult = [];
+
+        wikiResult.push(searchText);
+        return wikiResult;
     };
 
     const headCells = [
