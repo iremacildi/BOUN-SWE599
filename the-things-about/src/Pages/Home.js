@@ -30,6 +30,7 @@ const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
 const LDP = new rdf.Namespace('http://www.w3.org/ns/ldp#');
 const RDF = new rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 const BOOKMARKS = new rdf.Namespace('/bookmarks#');
+const SPACE = new rdf.Namespace('http://www.w3.org/ns/pim/space#');
 
 function Home() {
     const { session } = useSession();
@@ -100,21 +101,54 @@ function Home() {
 
         //get bookmarks of friends
         fetcher.load(me);
-        const friends = store.each(rdf.sym(me), FOAF('knows'));
+        const friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
 
         friends.forEach(async (friend) => {
-            await fetcher.load(friend);
-            const podsUrls = await getPodUrlAll(friend.value)
-            const pod = podsUrls[0];
-            var cont = `${pod}bookmarks`;
-            const listt = await getBookmarkList(cont, session.fetch);
+            console.log(friend)
 
-            if (!listt) { alert('no bookmark') }
-            else {
-                const _bookmarkTableData = await getThingAll(listt)
-                console.log(_bookmarkTableData)
-            }
+            await fetcher.load(friend);
+            const podsUrls = await getPodUrlAll(friend.value) //friend's pods
+            const pod = podsUrls[0]; //friend's pod
+            var cont = `${pod}bookmarks#test`;
+            const listt = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
+            console.log(listt)
+            await fetcher.load(store.sym(cont));
+            console.log(store.sym(cont));
+            console.log(me);
+            const nmmm = store.each(rdf.sym(store.sym(cont)), SCHEMA('name')); //get friends
+            console.log(nmmm);
+            console.log(rdf.sym(store.sym(cont)))
+            // console.log('girdim')
+            // var ab = store.sym(cont)
+            // console.log(ab);
+            // var c = rdf.sym(ab)
+            // console.log(c.doc())
+            // var d = store.each(c, null);
+            // console.log(d)
+            // console.log('cikdim')
+            // if (!listt) { alert('no bookmark') }
+            // else {
+            //     const _bookmarkTableData = await getThingAll(listt) //friend's bookmarks
+            //     // console.log(_bookmarkTableData)
+                
+            //     _bookmarkTableData.forEach((data) => {
+            //         // console.log(data)
+            //         // console.log(me)
+            //         // console.log(rdf.sym(me))
+            //         // console.log(friend)
+            //         // var bookmark = store.match(data, null, null, null)
+            //         // console.log(bookmark)
+
+            //         // console.log(store.match(friend, SCHEMA('name'), 'test', null))
+            //     })
+
+            //     // listt.graphs.graphs.
+
+            //     // console.log('qqqq')
+            // }
         });
+
+        // const matchh = store.match()
     };
 
     const headCells = [
