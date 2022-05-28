@@ -179,7 +179,7 @@ function Home() {
                             <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
                             <Grid container item direction="column" lg={1} alignItems="flex-end">
                                 <CustomButton onClick={handleFilterOpen}>Filter</CustomButton>
-                                <PopupFilter open={open} handleClose={handleFilterClose} />
+                                <PopupFilter open={open} handleClose={handleFilterClose} fetcher={fetcher} store={store} me={me} />
                             </Grid>
                         </Grid>
                         <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
