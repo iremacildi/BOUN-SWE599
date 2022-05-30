@@ -8,6 +8,7 @@ import SearchBar from '../Components/SearchBar';
 import PopupAddBookmark from './PopupAddBookmark';
 import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
 import PopupWelcome from './PopupWelcome';
+import PopupFilter from './PopupFilter';
 import {
     getSolidDataset,
     getThing,
@@ -27,15 +28,16 @@ const DESCRIPTION_PREDICATE = "https://schema.org/Description";
 const URL_PREDICATE = "https://schema.org/url";
 const IDENTIFIER_PREDICATE = "https://schema.org/identifier";
 const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
+const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
 
 function Home() {
     const { session } = useSession();
     const [bookmarkList, setBookmarkList] = useState();
     const [bookmarkTableRows, setBookmarkTableRows] = useState([]);
-    const STORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
     const [containerUri, setContainerUri] = useState();
     const [tableKey, setTableKey] = useState(0);
     const [me, setMe] = useState();
+    const [open, setOpen] = useState(false);
     const store = rdf.graph();
     const fetcher = new rdf.Fetcher(store);
 
@@ -150,6 +152,14 @@ function Home() {
         console.log(`Use this function to navigate back to ${url}`);
     };
 
+    const handleFilterOpen = () => {
+        setOpen(true);
+    };
+
+    const handleFilterClose = () => {
+        setOpen(false);
+    };
+
     return (
         <SessionProvider sessionId="session-provider-example"
             onError={console.log}
@@ -167,7 +177,10 @@ function Home() {
                     <Grid container item direction="column" lg={8} alignItems="center">
                         <Grid container spacing={1} justifyContent="center" alignItems="center" id="addmargin" direction="row">
                             <Grid container item direction="column" lg={11} alignItems="center"><SearchBar func={handleSearch} /></Grid>
-                            <Grid container item direction="column" lg={1} alignItems="flex-end"><CustomButton onClick={() => alert("you will see filter soon.")}>Filter</CustomButton></Grid>
+                            <Grid container item direction="column" lg={1} alignItems="flex-end">
+                                <CustomButton onClick={handleFilterOpen}>Filter</CustomButton>
+                                <PopupFilter open={open} handleClose={handleFilterClose} fetcher={fetcher} store={store} me={me} />
+                            </Grid>
                         </Grid>
                         <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
                             {bookmarkTableRows &&

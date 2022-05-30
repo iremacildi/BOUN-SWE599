@@ -5,6 +5,10 @@ import {
 } from "@inrupt/solid-client";
 import { parseDomain, ParseResultType } from 'parse-domain';
 const axios = require('axios');
+const rdf = require('rdflib');
+
+const VCARD = new rdf.Namespace("http://www.w3.org/2006/vcard/ns#");
+const FOAF = new rdf.Namespace('http://xmlns.com/foaf/0.1/');
 
 export async function getOrCreateBookmarkList(containerUri, fetch) {
     const indexUrl = `${containerUri}`;
@@ -120,4 +124,24 @@ export const wikidataSearch = async (searchText) => {
 
     wikiResult.push(searchText);
     return wikiResult;
+};
+
+export let getFriendsList = async (fetcher, store, me) => {
+
+    let friendsList = [];
+
+    await fetcher.load(me);
+
+    let friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
+
+    friends.forEach(async (friend) => {
+        await fetcher.load(friend);
+        let name = store.each(rdf.sym(friend), VCARD('fn'));
+        let pod = friend.value;
+
+        let friendinfo = [name ? name[0].value : '', pod]
+        friendsList.push(friendinfo)
+    });
+
+    return friendsList;
 };
