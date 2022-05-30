@@ -1,23 +1,9 @@
 //This component was created by using Material UI website's Sorting and Collapsible Table examples.
 //Source: https://mui.com/material-ui/react-table/
-import * as React from 'react';
+import { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import {Box, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Typography, Paper, Checkbox, IconButton, Tooltip, Link} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
@@ -25,6 +11,7 @@ import { Grid } from '@mui/material';
 import Collapse from "@mui/material/Collapse";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { getUrlHostname, setHttp } from '../Functions';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -184,10 +171,10 @@ CustomTableToolbar.propTypes = {
 
 function Row(props) {
 
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
 
     return (
-        <React.Fragment>
+        <Fragment>
             <TableRow
                 hover
                 role="checkbox"
@@ -211,9 +198,12 @@ function Row(props) {
                     scope="row"
                     padding="none"
                 >
-                    {props.row.name}
+                    
+                    <Link href={setHttp(props.row.source)} target="_blank" rel="noreferrer" underline="hover" color="inherit">
+                        {props.row.name}
+                    </Link>
                 </TableCell>
-                <TableCell align="right">{props.row.source}</TableCell>
+                <TableCell align="right">{getUrlHostname(setHttp(props.row.source))}</TableCell>
                 <TableCell align="right">{props.row.type}</TableCell>
                 <TableCell padding="checkbox">
                     <Checkbox
@@ -248,16 +238,16 @@ function Row(props) {
                     </Collapse>
                 </TableCell>
             </TableRow>
-        </React.Fragment>
+        </Fragment>
     );
 }
 
 export default function CustomTable(props) {
-    const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
-    const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(6);
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('calories');
+    const [selected, setSelected] = useState([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(6);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -309,7 +299,7 @@ export default function CustomTable(props) {
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%' }} key={props.key}>
             <Paper sx={{ width: '100%', mb: 2 }}>
                 <CustomTableToolbar numSelected={selected.length} selected={selected} />
                 <TableContainer>
