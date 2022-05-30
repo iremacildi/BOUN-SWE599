@@ -128,7 +128,7 @@ function Row(props) {
 
 export default function CustomTableMini(props) {
     const [order, setOrder] = useState('asc');
-    const [orderBy, setOrderBy] = useState('calories');
+    const [orderBy, setOrderBy] = useState('name');
     const [selected, setSelected] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(6);
@@ -166,15 +166,6 @@ export default function CustomTableMini(props) {
             return;
         }
         setSelected([]);
-    };
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
     };
 
     const isSelected = (name) => selected.indexOf(name) !== -1;
