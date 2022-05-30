@@ -1,8 +1,15 @@
 import { Grid, Typography } from '@mui/material';
 import logo from '../img/TTAlogo.png'
 import CustomButton from '../Components/CustomButton';
+import { useNavigate } from "react-router-dom";
 
 function Welcome() {
+
+  let navigate = useNavigate();
+
+  const redirectLoginPage = () => {
+    navigate("../login");
+  }
 
   return (
     <Grid container className="center" spacing={2} columns={16} direction="row" alignItems="center">
@@ -17,7 +24,7 @@ function Welcome() {
           </Typography>
         </Grid>
         <Grid container item lg={16} justifyContent="center" alignItems="center" id="addmargin">
-          <CustomButton href="/login">Login</CustomButton>
+          <CustomButton onClick={redirectLoginPage}>Login</CustomButton>
         </Grid>
       </Grid>
     </Grid>
