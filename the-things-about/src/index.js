@@ -6,7 +6,7 @@ import { SessionProvider } from "@inrupt/solid-ui-react";
 
 ReactDOM.render(
   <SessionProvider>
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <App />
     </Router>
   </SessionProvider>,
