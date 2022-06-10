@@ -15,7 +15,8 @@ import {
     getThingAll,
     getUrlAll,
     getStringNoLocale,
-    getPodUrlAll
+    getPodUrlAll,
+    removeAll
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList, getBookmarkList, wikidataSearch } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
@@ -38,6 +39,7 @@ function Home() {
     const [tableKey, setTableKey] = useState(0);
     const [me, setMe] = useState();
     const [open, setOpen] = useState(false);
+    const [selectedFriends, setSelectedFriends] = useState();
     const store = rdf.graph();
     const fetcher = new rdf.Fetcher(store);
 
@@ -85,46 +87,120 @@ function Home() {
         setTableKey(key => key + 1)
     };
 
-    const handleSearch = async (searchText) => {
-        const searchResult = [];
+    const handleSearch = async (searchText, friends) => {
 
         //search in wikidata for similar keywords
-        const searchKeywords = await wikidataSearch(searchText);
+        var searchKeywords = await wikidataSearch(searchText.toLowerCase());
         console.log(searchKeywords);
 
         //get bookmarks of friends
+        if (selectedFriends && selectedFriends.length > 0) {
+            const bookmarksSearchResult = await getBookmarksOfSelectedFriends(searchKeywords);
+            setTimeout(() => {
+                assigntable(bookmarksSearchResult);
+            }, 3000)
+
+        }
+        else {
+            const bookmarksSearchResult = await getBookmarks(searchKeywords, friends);
+            setTimeout(() => {
+                assigntable(bookmarksSearchResult);
+            }, 3000)
+        }
+    };
+
+    let assigntable = (bookmarks) => {
+        console.log(bookmarks);
+
+        var _bookmarks = [];
+        bookmarks.forEach((bm) => {
+            const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
+            const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
+            const _bookmarkSource = getStringNoLocale(bm, URL_PREDICATE)
+            const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
+            _bookmarks.push(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
+        })
+        if (_bookmarks.length > 0) {
+            setBookmarkTableRows(_bookmarks);
+        }
+
+        return _bookmarks;
+    }
+
+    let getBookmarksOfSelectedFriends = async (searchKeywords) => {
+        var searchResult = [];
+
         fetcher.load(me);
-        const friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
+        console.log('selectedFriends')
+        console.log(selectedFriends)
 
-        await friends.forEach(async (friend) => {
-            await fetcher.load(friend);
-
-            const podsUrls = await getPodUrlAll(friend.value) //friend's pods
-            const pod = podsUrls[0]; //friend's pod
+        selectedFriends.push(me);
+        selectedFriends.forEach(async (friend) => {
+            const pod = friend.replace('profile/card#me', '');
             var cont = `${pod}bookmarks`;
-
+            console.log('friend pod url')
+            console.log(cont)
             const bookmarks = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
 
-            if (!bookmarks) { alert('no bookmark') }
+            if (!bookmarks) { alert(('There is no bookmark in ').concat(pod)) }
             else {
-                const _bookmarkTableData = await getThingAll(bookmarks) //friend's bookmarks
+                var _bookmarkTableData = await getThingAll(bookmarks) //friend's bookmarks
 
-                await _bookmarkTableData.forEach(async (data) => {
+                _bookmarkTableData.forEach(async (data) => {
+                    console.log('fetched')
                     await fetcher.load(store.sym(data.url));
-                    const name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name'));
-                    const description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description'));
+                    var name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name'));
+                    var description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description'));
 
-                    if (name && new RegExp(searchKeywords.join("|")).test(name[0].value)) {
+                    if (name && new RegExp(searchKeywords.join("|")).test(name[0].value.toLowerCase())) {
                         searchResult.push(data);
                     }
-                    else if (description && new RegExp(searchKeywords.join("|")).test(description[0].value)) {
+                    else if (description && new RegExp(searchKeywords.join("|")).test(description[0].value.toLowerCase())) {
                         searchResult.push(data);
                     }
                 })
             }
         });
 
-        console.log(searchResult);
+        return searchResult;
+    }
+
+
+    let getBookmarks = async (searchKeywords) => {
+        var searchResult = [];
+
+        fetcher.load(me);
+        var friends = store.each(rdf.sym(me), FOAF('knows')); //get friends
+
+        friends.push(me)
+        friends.forEach(async (friend) => {
+            await fetcher.load(friend);
+
+            const podsUrls = await getPodUrlAll(friend.value) //friend's pods
+            const pod = podsUrls[0]; //friend's pod
+            var cont = `${pod}bookmarks`;
+            const bookmarks = await getBookmarkList(cont, session.fetch); //friend's bookmark dataset
+
+            if (!bookmarks) { alert(('There is no bookmark in ').concat(pod)) }
+            else {
+                var _bookmarkTableData = await getThingAll(bookmarks) //friend's bookmarks
+                _bookmarkTableData.forEach(async (data) => {
+                    console.log('fetched')
+                    await fetcher.load(store.sym(data.url));
+                    var name = store.each(rdf.sym(store.sym(data.url)), SCHEMA('name'));
+                    var description = store.each(rdf.sym(store.sym(data.url)), SCHEM('Description'));
+
+                    if (name && new RegExp(searchKeywords.join("|")).test(name[0].value.toLowerCase())) {
+                        searchResult.push(data);
+                    }
+                    else if (description && new RegExp(searchKeywords.join("|")).test(description[0].value.toLowerCase())) {
+                        searchResult.push(data);
+                    }
+                })
+            }
+        });
+
+        return searchResult;
     };
 
     const headCells = [
@@ -156,8 +232,13 @@ function Home() {
         setOpen(true);
     };
 
-    const handleFilterClose = () => {
+    const handleFilterClose = (friends) => {
+        setSelectedFriends(friends)
         setOpen(false);
+    };
+
+    const deleteBookmark = (url) => {
+        // removeAll(url)
     };
 
     return (
@@ -184,7 +265,7 @@ function Home() {
                         </Grid>
                         <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
                             {bookmarkTableRows &&
-                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} />}
+                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} deleteBookmark={deleteBookmark}/>}
                         </Grid>
                         <Grid container item alignItems="flex-start" id="addmargin" direction="row">
                             <PopupAddBookmark bookmarkList={bookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
