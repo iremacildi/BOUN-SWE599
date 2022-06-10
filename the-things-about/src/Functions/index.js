@@ -76,40 +76,38 @@ export const wikidataSearch = async (searchText) => {
 
     try {
         let query = `
-        SELECT distinct ?itemLabel ?linkcount #?classLabel ?typeLabel
-        WHERE {
-          {
-            SELECT ?class ?searched_item
+            SELECT distinct ?classLabel ?itemLabel ?linkcount
             WHERE {
               {
-                SELECT ?searched_item {
-                  SERVICE wikibase:mwapi {
-                    bd:serviceParam wikibase:api "EntitySearch".
-                    bd:serviceParam wikibase:endpoint "www.wikidata.org".
-                    bd:serviceParam mwapi:search "` + searchText + `".
-                    bd:serviceParam mwapi:language "en".
-                    ?searched_item wikibase:apiOutputItem mwapi:item.
-                    ?num wikibase:apiOrdinal true.
+                SELECT ?class ?searched_item
+                WHERE {
+                  {
+                    SELECT ?searched_item {
+                      SERVICE wikibase:mwapi {
+                        bd:serviceParam wikibase:api "EntitySearch".
+                        bd:serviceParam wikibase:endpoint "www.wikidata.org".
+                        bd:serviceParam mwapi:search "` + searchText + `".
+                        bd:serviceParam mwapi:language "en".
+                        ?searched_item wikibase:apiOutputItem mwapi:item.
+                        ?num wikibase:apiOrdinal true.
+                      }
+                      SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+                    }
+                    LIMIT 1
                   }
-                  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+                  ?searched_item wdt:P279 ?class .
+                  hint:Prior hint:runLast true .
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
                 }
-                LIMIT 5
               }
               hint:Prior hint:runFirst true .
-              ?searched_item wdt:P279 ?class .
-              ?searched_item wdt:P31 ?type .
+              ?item wdt:P279 ?class .
+              ?item wikibase:sitelinks ?linkcount .
+              FILTER(?linkcount > 30).
+              FILTER(?item != ?searched_item).
               SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
             }
-          }
-          hint:Prior hint:runFirst true .
-          ?item wdt:P279 ?class .
-          ?item wdt:P31 ?type .
-          ?item wikibase:sitelinks ?linkcount .
-          FILTER(?linkcount > 50).
-          FILTER(?item != ?searched_item).
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-        }
-        ORDER BY ASC(?class) ASC(?type) DESC(?linkcount)`
+            ORDER BY ASC(?class) DESC(?linkcount)`
 
         const params = new URLSearchParams([['format', 'json'], ['query', query]]);
 
