@@ -124,38 +124,39 @@ function PopupAddBookmark({ bookmarkList, containerUri, refreshTable }) {
                                 <InputLabel id="bookmarkType">Type</InputLabel>
                             </Grid>
                             <Grid container item direction="column" lg={10} justifyContent="center" alignItems="flex-start">
-                                <CustomTextField
-                                    size="small"
-                                    name="bookmarkType"
-                                    required
-                                    fullWidth
+                                <Select
                                     id="bookmarkType"
-                                    placeholder="Bookmark Type"
-                                    InputProps={{
-                                        value: (bookmarkType),
-                                        onChange: (e) => setBookmarkType(e.target.value)
-                                    }}
-                                />
+                                    value={bookmarkType}
+                                    onChange={(e) => setBookmarkType(e.target.value)}
+                                    sx={{ maxHeight: 40, width: 'inherit' }}
+                                    input={<CustomSelect />}
+                                >
+                                    <MenuItem value={"Article"}>Article</MenuItem>
+                                    <MenuItem value={"Audio"}>Audio</MenuItem>
+                                    <MenuItem value={"Blog Post"}>Blog Post</MenuItem>
+                                    <MenuItem value={"Scientific"}>Scientific</MenuItem>
+                                    <MenuItem value={"Social Media"}>Social Media</MenuItem>
+                                    <MenuItem value={"Video"}>Video</MenuItem>
+                                </Select>
                             </Grid>
                         </Grid>
                         <Grid container direction="row" id="addmargin">
-                            <Grid container item direction="column" lg={3} justifyContent="center" alignItems="flex-start">
-                                <Select
-                                    id="bookmarkLabel"
-                                    value={bookmarkLabel}
-                                    onChange={(e) => setBookmarkLabel(e.target.value)}
-                                    sx={{ maxHeight: 40 }}
-                                    input={<CustomSelect />}
-                                >
-                                    <MenuItem value={0}>Labels</MenuItem>
-                                    <MenuItem value={10}>NoSQL</MenuItem>
-                                    <MenuItem value={20}>Work</MenuItem>
-                                    <MenuItem value={30}>School</MenuItem>
-                                    <MenuItem value={40}>Programming</MenuItem>
-                                </Select>
+                        <Grid container item direction="column" lg={2} justifyContent="center" alignItems="flex-start">
+                                <InputLabel id="bookmarkLabel">Label</InputLabel>
                             </Grid>
-                            <Grid container item direction="column" lg={9} justifyContent="center" alignItems="flex-start">
-                                <Chip label="Deletable" onDelete={handleDeleteLabel} />
+                            <Grid container item direction="column" lg={10} justifyContent="center" alignItems="flex-start">
+                                <CustomTextField
+                                    size="small"
+                                    name="bookmarkLabel"
+                                    required
+                                    fullWidth
+                                    id="bookmarkLabel"
+                                    placeholder="Bookmark Label"
+                                    InputProps={{
+                                        value: (bookmarkLabel),
+                                        onChange: (e) => setBookmarkLabel(e.target.value)
+                                    }}
+                                />
                             </Grid>
                         </Grid>
                         <Grid container direction="row" id="addmargintop">

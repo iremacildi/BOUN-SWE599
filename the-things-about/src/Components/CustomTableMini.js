@@ -89,7 +89,7 @@ CustomTableHead.propTypes = {
 };
 
 function Row(props) {
-
+    
     return (
         <Fragment>
             <TableRow
@@ -97,12 +97,12 @@ function Row(props) {
                 role="checkbox"
                 aria-checked={props.isItemSelected}
                 tabIndex={-1}
-                key={props.row[0]}
+                key={props.row[1]}
                 selected={props.isItemSelected}
             >
                 <TableCell padding="checkbox">
                     <Checkbox
-                        onClick={(event) => props.handleClick(event, props.row[0])}
+                        onClick={(event) => props.handleClick(event, props.row[1])}
                         color="primary"
                         checked={props.isItemSelected}
                         inputProps={{
@@ -156,6 +156,7 @@ export default function CustomTableMini(props) {
             );
         }
 
+        props.setSelectedFriends(newSelected)
         setSelected(newSelected);
     };
 
@@ -177,7 +178,14 @@ export default function CustomTableMini(props) {
         setPage(0);
     };
 
-    const isSelected = (name) => selected.indexOf(name) !== -1;
+    const isSelected = (name) => {
+        if(selected.indexOf(name) !== -1 || props.selectedFriends.includes(name)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
@@ -204,10 +212,10 @@ export default function CustomTableMini(props) {
                             {stableSort(props.rows, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const isItemSelected = isSelected(row[0]);
+                                    const isItemSelected = isSelected(row[1]);
                                     const labelId = `custom-table-checkbox-${index}`;
                                     return (
-                                        <Row key={row[0]} row={row} isItemSelected={isItemSelected} labelId={labelId} handleClick={handleClick} />
+                                        <Row key={row[1]} row={row} isItemSelected={isItemSelected} labelId={labelId} handleClick={handleClick} />
                                     )
                                 })}
                             {emptyRows > 0 && (

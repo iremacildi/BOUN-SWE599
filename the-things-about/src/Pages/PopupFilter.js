@@ -22,6 +22,7 @@ export default function PopupFilter(props) {
         })();
     });
     const [webids, setWebids] = useState([]);
+    const [selectedFriends, setSelectedFriends] = useState([]);
 
     const handleTextChange = () => (event) => {
         setSearchText(event.target.value);
@@ -33,6 +34,7 @@ export default function PopupFilter(props) {
 
     const handleSearch = () => {
         webids.push(searchText);
+        selectedFriends.push(searchText);
         setSearchText('');
     }
 
@@ -67,7 +69,7 @@ export default function PopupFilter(props) {
                             <DialogContentText>Here are your cool friends! <ElectricBoltIcon /><br />
                                 Please select the ones you want to include their pods in your search.
                             </DialogContentText><br />
-                            <CustomTableMini rows={friendsList} headCells={headCells} />
+                            <CustomTableMini rows={friendsList} headCells={headCells} setSelectedFriends={setSelectedFriends} selectedFriends={selectedFriends}  />
                         </>
                         :
                         <DialogContentText>
@@ -75,7 +77,7 @@ export default function PopupFilter(props) {
                             You should definitely find some "solid" friends!
                         </DialogContentText>
                     }
-                    <DialogContentText>Enter WebIds other than your friends'</DialogContentText>
+                    <DialogContentText>Enter WebIds other than your friends'<br/>Format: https://name.solidcommunity.net/</DialogContentText>
                     <Grid style={{ height: '35px', width: 'inherit' }}>
                         <FormControl sx={{ height: 'inherit', width: 'inherit' }} variant="outlined">
                             <CustomTextField
@@ -108,7 +110,7 @@ export default function PopupFilter(props) {
                     }
                 </DialogContent>
                 <DialogActions>
-                    <CustomButton variant="contained" onClick={props.handleClose} endIcon={<DirectionsRunIcon />}>
+                    <CustomButton variant="contained" onClick={() => props.handleClose(selectedFriends)} endIcon={<DirectionsRunIcon />}>
                         That's all
                     </CustomButton>
                 </DialogActions>
