@@ -141,7 +141,10 @@ function Home() {
         console.log('selectedFriends')
         console.log(selectedFriends)
 
-        selectedFriends.push(me.value);
+        if (!selectedFriends.includes(me.value)) {
+            selectedFriends.push(me.value);
+        }
+
         selectedFriends.forEach(async (friend) => {
             const pod = friend.replace('profile/card#me', '');
             var cont = `${pod}bookmarks`;
