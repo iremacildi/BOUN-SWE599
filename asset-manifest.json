@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/the-things-about/static/css/main.d87554d2.css",
-    "main.js": "/the-things-about/static/js/main.d90442d6.js",
+    "main.js": "/the-things-about/static/js/main.b5c2f9dd.js",
     "static/media/TTAlogo.png": "/the-things-about/static/media/TTAlogo.773ccc75739ac99bac25.png",
     "index.html": "/the-things-about/index.html",
     "main.d87554d2.css.map": "/the-things-about/static/css/main.d87554d2.css.map",
-    "main.d90442d6.js.map": "/the-things-about/static/js/main.d90442d6.js.map"
+    "main.b5c2f9dd.js.map": "/the-things-about/static/js/main.b5c2f9dd.js.map"
   },
   "entrypoints": [
     "static/css/main.d87554d2.css",
-    "static/js/main.d90442d6.js"
+    "static/js/main.b5c2f9dd.js"
   ]
 }
