@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Grid, IconButton } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, IconButton } from '@mui/material';
 import logo from '../img/TTAlogo.png'
 import CustomButton from '../Components/CustomButton';
 import CustomTable from '../Components/CustomTable';
-import SettingsIcon from '@mui/icons-material/Settings';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import SearchBar from '../Components/SearchBar';
 import PopupAddBookmark from './PopupAddBookmark';
 import { useSession, CombinedDataProvider } from "@inrupt/solid-ui-react";
@@ -20,7 +21,8 @@ import {
     saveSolidDatasetAt
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList, getBookmarkList, wikidataSearch } from '../Functions';
-import { SessionProvider } from "@inrupt/solid-ui-react";
+import { SessionProvider, LogoutButton } from "@inrupt/solid-ui-react";
+import { useNavigate } from "react-router-dom";
 const rdf = require('rdflib');
 
 const NAME_PREDICATE = "http://schema.org/name";
@@ -40,6 +42,7 @@ function Home() {
     const [tableKey, setTableKey] = useState(0);
     const [me, setMe] = useState();
     const [open, setOpen] = useState(false);
+    const [openLogout, setOpenLogout] = useState(false);
     const [selectedFriends, setSelectedFriends] = useState();
     const store = rdf.graph();
     const fetcher = new rdf.Fetcher(store);
@@ -241,6 +244,12 @@ function Home() {
         setOpen(false);
     };
 
+    let navigate = useNavigate();
+
+    const redirectWelcomePage = () => {
+        navigate("../");
+    }
+
     const deleteBookmark = async (addresses) => {
         console.log('addresses')
         addresses.forEach(async (thingsaddress) => {
@@ -252,6 +261,14 @@ function Home() {
         })
         console.log('addresses2')
         refreshTable();
+    };
+
+    const handleClickOpen = () => {
+        setOpenLogout(true);
+    };
+
+    const handleClose = () => {
+        setOpenLogout(false);
     };
 
     return (
@@ -285,9 +302,38 @@ function Home() {
                         </Grid>
                     </Grid>
                     <Grid container item direction="column" lg={2} alignItems="flex-end">
-                        <IconButton size="medium" onClick={() => alert("you will see settings soon.")}>
-                            <SettingsIcon sx={{ fontSize: 40, color: '#000000' }} />
+                        <IconButton size="medium" onClick={handleClickOpen}>
+                            <ExitToAppIcon sx={{ fontSize: 30, color: '#000000' }} />
                         </IconButton>
+                        <Dialog
+                            open={openLogout}
+                            onClose={handleClose}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                        >
+                            <DialogTitle id="alert-dialog-title">
+                                {"Oh, are you leaving?"}
+                            </DialogTitle>
+                            <DialogContent sx={{ minWidth: 400 }}>
+                                <DialogContentText id="alert-dialog-description">
+                                    Please come back later.
+                                    <FavoriteIcon />
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <CustomButton onClick={handleClose} id="addmarginright">
+                                    Cancel
+                                </CustomButton>
+                                <LogoutButton
+                                    onError={function noRefCheck() { alert('Error occured.') }}
+                                    onLogout={() => redirectWelcomePage()}
+                                >
+                                    <CustomButton id="addmarginright">
+                                        Ok, bye.
+                                    </CustomButton>
+                                </LogoutButton>
+                            </DialogActions>
+                        </Dialog>
                     </Grid>
                 </Grid>
             </CombinedDataProvider>
