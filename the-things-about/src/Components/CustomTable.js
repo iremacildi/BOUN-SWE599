@@ -144,7 +144,7 @@ const CustomTableToolbar = (props) => {
                     </Grid>
                     <Grid container item alignItems="flex-end" lg={1} direction="column">
                         <Tooltip title="Delete">
-                            <IconButton onClick={() => alert("delete " + props.selected)}>
+                            <IconButton onClick={() => props.deleteBookmark(props.selected)}>
                                 <DeleteIcon />
                             </IconButton>
                         </Tooltip>
@@ -154,7 +154,7 @@ const CustomTableToolbar = (props) => {
                     <Grid container item alignItems="flex-end" lg={11} direction="column"></Grid>
                     <Grid container item alignItems="flex-end" lg={1} direction="column">
                         <Tooltip title="Delete">
-                            <IconButton onClick={() => alert("delete " + props.selected)}>
+                            <IconButton onClick={() => props.deleteBookmark(props.selected)}>
                                 <DeleteIcon />
                             </IconButton>
                         </Tooltip>
@@ -207,7 +207,7 @@ function Row(props) {
                 <TableCell align="right">{props.row.type}</TableCell>
                 <TableCell padding="checkbox">
                     <Checkbox
-                        onClick={(event) => props.handleClick(event, props.row.name)}
+                        onClick={(event) => props.handleClick(event, props.row.thingaddress)}
                         color="primary"
                         checked={props.isItemSelected}
                         inputProps={{
@@ -277,7 +277,7 @@ export default function CustomTable(props) {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = props.rows.map((n) => n.name);
+            const newSelecteds = props.rows.map((n) => n.thingaddress);
             setSelected(newSelecteds);
             return;
         }
@@ -301,7 +301,7 @@ export default function CustomTable(props) {
     return (
         <Box sx={{ width: '100%' }} key={props.key}>
             <Paper sx={{ width: '100%', mb: 2 }}>
-                <CustomTableToolbar numSelected={selected.length} selected={selected} />
+                <CustomTableToolbar numSelected={selected.length} selected={selected} deleteBookmark={props.deleteBookmark} />
                 <TableContainer>
                     <Table
                         sx={{ minWidth: 750 }}
@@ -321,7 +321,7 @@ export default function CustomTable(props) {
                             {stableSort(props.rows, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const isItemSelected = isSelected(row.name);
+                                    const isItemSelected = isSelected(row.thingaddress);
                                     const labelId = `custom-table-checkbox-${index}`;
                                     return (
                                         <Row key={row.name} row={row} isItemSelected={isItemSelected} labelId={labelId} handleClick={handleClick} />

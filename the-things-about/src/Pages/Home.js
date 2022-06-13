@@ -16,7 +16,8 @@ import {
     getUrlAll,
     getStringNoLocale,
     getPodUrlAll,
-    removeAll
+    removeThing,
+    saveSolidDatasetAt
 } from "@inrupt/solid-client";
 import { getOrCreateBookmarkList, getBookmarkList, wikidataSearch } from '../Functions';
 import { SessionProvider } from "@inrupt/solid-ui-react";
@@ -64,18 +65,20 @@ function Home() {
             const _bookmarkTableData = getThingAll(list)
             var _bookmarkTableRows = [];
             _bookmarkTableData.map((bm) => {
+                const _bookmarkThingAddress = bm.url
                 const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
                 const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
                 const _bookmarkSource = getStringNoLocale(bm, URL_PREDICATE)
                 const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
-                _bookmarkTableRows = _bookmarkTableRows.concat(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
+                _bookmarkTableRows = _bookmarkTableRows.concat(createData(_bookmarkThingAddress, _bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
             })
             setBookmarkTableRows(_bookmarkTableRows);
         })();
     }, [session, session.info.isLoggedIn, containerUri, tableKey]);
 
-    function createData(name, source, type, comment) {
+    function createData(thingaddress, name, source, type, comment) {
         return {
+            thingaddress,
             name,
             source,
             type,
@@ -114,11 +117,12 @@ function Home() {
 
         var _bookmarks = [];
         bookmarks.forEach((bm) => {
+            const _bookmarkThingAddress = bm.url
             const _bookmarkName = getStringNoLocale(bm, NAME_PREDICATE)
             const _bookmarkType = getStringNoLocale(bm, IDENTIFIER_PREDICATE)
             const _bookmarkSource = getStringNoLocale(bm, URL_PREDICATE)
             const _bookmarkComment = getStringNoLocale(bm, DESCRIPTION_PREDICATE)
-            _bookmarks.push(createData(_bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
+            _bookmarks.push(createData(_bookmarkThingAddress, _bookmarkName, _bookmarkSource, _bookmarkType, _bookmarkComment))
         })
         if (_bookmarks.length > 0) {
             setBookmarkTableRows(_bookmarks);
@@ -237,8 +241,17 @@ function Home() {
         setOpen(false);
     };
 
-    const deleteBookmark = (url) => {
-        // removeAll(url)
+    const deleteBookmark = async (addresses) => {
+        console.log('addresses')
+        addresses.forEach(async (thingsaddress) => {
+            const updatedBookmarkList = removeThing(bookmarkList, thingsaddress)
+            console.log(thingsaddress)
+            await saveSolidDatasetAt(containerUri, updatedBookmarkList, {
+                fetch: session.fetch,
+            });
+        })
+        console.log('addresses2')
+        refreshTable();
     };
 
     return (
@@ -265,7 +278,7 @@ function Home() {
                         </Grid>
                         <Grid container item justifyContent="center" alignItems="center" id="addmargin" direction="row">
                             {bookmarkTableRows &&
-                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} deleteBookmark={deleteBookmark}/>}
+                                <CustomTable key={tableKey} rows={bookmarkTableRows} headCells={headCells} deleteBookmark={deleteBookmark} />}
                         </Grid>
                         <Grid container item alignItems="flex-start" id="addmargin" direction="row">
                             <PopupAddBookmark bookmarkList={bookmarkList} containerUri={containerUri} refreshTable={refreshTable} />
